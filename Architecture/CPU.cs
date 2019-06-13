@@ -31,6 +31,8 @@ namespace Architecture
 
         public Random Random = new Random();
 
+        internal Memory m1 = new Memory();
+
         public void ExecuteOpcode(ushort opcode)
         {
             ushort nibble = (ushort)(opcode & 0xF000);
@@ -274,18 +276,30 @@ namespace Architecture
 
         private void LD_B_Vx(byte x)
         {
-            throw new NotImplementedException();
-        }//32not imp
+            byte hundreds = (byte) ((V[x] % 1000 - V[x]%100)/100);
+            byte tens = (byte)((V[x] % 100 - x%10)/10);
+            byte ones = (byte)(V[x] % 10);
+
+            m1.MemoryMap[I] = hundreds;
+            m1.MemoryMap[I + 1] = tens;
+            m1.MemoryMap[I + 2] = ones;
+        }//32
 
         private void LD_I_Vx(byte x)
         {
-            throw new NotImplementedException(); 
-        }//33 not imp
+            for (int i = 0; i <= x; i++)
+            {
+                m1.MemoryMap[I + i] = V[i];
+            }
+        }//33
 
         private void LD_Vx_I(byte x)
         {
-            throw new NotImplementedException();
-        }//34 not imp
+            for (int i = 0; i <= x; i++)
+            {
+                V[i] = m1.MemoryMap[I + i]; 
+            }
+        }//34 
 
         private void SYS(ushort nnn)
         {

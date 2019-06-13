@@ -18,14 +18,15 @@ namespace Chip_8_ConsoleDisplay
             while (b1.BaseStream.Position < b1.BaseStream.Length)
             {
                 ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
-                Console.WriteLine($"{opcode:X4}");
-                c1.ExecuteOpcode(opcode);
+                //Console.WriteLine($"{opcode:X4}");
+                //c1.ExecuteOpcode(opcode);
             }
 
             b1.Close();
 
-          
-        
+
+            Console.WriteLine($"100={hundreds}  10 = {tens}  1={ones}");
+
 
             Console.ReadKey();
         }
