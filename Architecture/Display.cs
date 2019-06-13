@@ -19,5 +19,23 @@ namespace Architecture
             }
         }
 
+        public bool XORPixel(ushort cordinates)
+        {
+            bool flag = false;
+
+            if (cordinates >= 2048)
+                return flag;
+
+            if (Pixels[cordinates] == true)
+            {
+                Pixels[cordinates] = false;
+                flag = true;
+            }
+            else
+                Pixels[cordinates] = true;
+            return flag;
+        }
+
+
     }
 }
