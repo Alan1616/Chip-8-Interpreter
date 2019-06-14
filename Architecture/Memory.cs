@@ -7,12 +7,13 @@ using System.IO;
 
 namespace Architecture
 {
-    internal class Memory
+    public class Memory
     {
         public byte[] MemoryMap = new byte[4096];
+        //private ushort fontStartLocation = 0;
 
 
-        internal Memory()
+        public Memory()
         {
             LoadFont(0x000);
         }
@@ -29,6 +30,23 @@ namespace Architecture
                 startLocation++;
             }
         }
+
+        public void LoadProgram(string location)
+        {
+            BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
+            int i = 0;
+            while (b1.BaseStream.Position < b1.BaseStream.Length)
+            {
+                if (0x200 + i > 0xFFF)
+                    throw new OutOfMemoryException();
+                byte oneByte = b1.ReadByte();
+                MemoryMap[0x200 + i] = oneByte;
+                i++;
+            }
+            b1.Close();
+                
+        }
+
         
     }
 }

@@ -20,7 +20,7 @@ namespace Architecture
         public byte SoundTimer;
 
         //The program counter(PC) is 16-bit, and is used to store the currently executing address
-        public ushort PC;
+        public ushort PC = 0x200;
 
         //The stack pointer (SP) is 8-bit, it is used to point to the topmost level of the stack.
         public byte SP;
@@ -31,7 +31,20 @@ namespace Architecture
 
         private Random random = new Random();
 
-        internal Memory m1 = new Memory();
+        public Memory m1 = new Memory();
+
+        public void Initialize()
+        {
+            Display.ClearDisplay();
+            m1 = new Memory();
+            Stack = new ushort[16];
+            V = new byte[16];
+            DelayTimer = 0;
+            SoundTimer = 0;
+            PC = 0x200;
+            SP = 0;
+            I = 0;
+        }
 
         public void ExecuteOpcode(ushort opcode)
         {
@@ -40,7 +53,7 @@ namespace Architecture
             byte y = (byte)((opcode & 0x00F0) >> 4);
             byte kk = (byte)((opcode & 0x0FF0) >> 4);
             byte n = (byte)((opcode & 0x000F) );
-            ushort nnn = (byte)((opcode & 0x0FFF));
+            ushort nnn = (ushort)((opcode & 0x0FFF));
             //Console.WriteLine($"{nibble:X}");
 
             switch (nibble)
@@ -191,6 +204,39 @@ namespace Architecture
                 default:
                     throw new Exception($"Nibble out of bound");
             }
+        }
+
+
+        public ushort FullCycle()
+        {
+            byte[] codedOpcode = FetchOpcode();
+            ushort decodedOpcode = DecodeOpcode(codedOpcode);
+            ExecuteOpcode(decodedOpcode);
+            PC = (ushort)(PC + 2);
+
+            if (SoundTimer > 0)
+                SoundTimer--;
+            if (DelayTimer > 0)
+                DelayTimer--;
+            return decodedOpcode;
+            //update timers
+        }
+
+        private byte[] FetchOpcode()
+        {
+            byte[] output = new byte[2];
+
+            output[0] = m1.MemoryMap[PC];
+            output[1] = m1.MemoryMap[PC+1];
+
+            return output;
+        }
+
+        private ushort DecodeOpcode(byte[] codedOpcode)
+        {
+            ushort output = (ushort)(codedOpcode[0] << 8 | codedOpcode[1]);
+
+            return output;
         }
 
         //NameOfInstruction[Number of instruction] - short description
@@ -381,9 +427,9 @@ namespace Architecture
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    if ((pixels[i] & (0x80 >> j))!=0)
+                    if ((pixels[i] & (0x80 >> j)) != 0)
                     {
-                        bool flag = Display.XORPixel((ushort)(xCoordinate + j + (yCoordinate + i) * 64));
+                        bool flag = Display.XORPixel((ushort)((xCoordinate + j + (yCoordinate + i) * 64)));
                         if (flag)
                         {
                             V[15] = 1;
@@ -392,7 +438,9 @@ namespace Architecture
                 }
             }
 
-        }//23 bugged.
+
+
+        }//23 need clarification.
 
         private void SKP_Vx(byte x)
         {

@@ -12,17 +12,25 @@ namespace Chip_8_ConsoleDisplay
     {
         static void Main(string[] args)
         {
-         
-            BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8",FileMode.Open),System.Text.Encoding.BigEndianUnicode);
             CPU c1 = new CPU();
-            while (b1.BaseStream.Position < b1.BaseStream.Length)
+            c1.m1.LoadProgram("Chip8 Picture.ch8");
+
+
+            while (true)
             {
-                ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
-                Console.WriteLine($"{opcode:X4}");
-                //c1.ExecuteOpcode(opcode);
+                Console.WriteLine($"{c1.FullCycle():X4}");
             }
 
-            b1.Close();
+            //BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
+            //while (b1.BaseStream.Position < b1.BaseStream.Length)
+            //{
+            //    ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
+            //    Console.WriteLine($"{opcode:X4}");
+
+            //    //c1.ExecuteOpcode(opcode);
+            //}
+
+            //b1.Close();
 
 
             Console.ReadKey();

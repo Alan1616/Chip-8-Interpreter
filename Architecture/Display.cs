@@ -23,8 +23,7 @@ namespace Architecture
         {
             bool flag = false;
 
-            if (cordinates >= 2048)
-                return flag;
+            cordinates = (ushort)(cordinates % 2048);
 
             if (Pixels[cordinates] == true)
             {
