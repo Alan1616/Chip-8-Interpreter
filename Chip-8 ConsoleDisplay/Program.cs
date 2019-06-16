@@ -14,7 +14,7 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {
             CPU c1 = new CPU();
-            c1.m1.LoadProgram(@"heart_monitor.ch8");
+            c1.m1.LoadProgram(@"PONG");
 
 
             while (true)

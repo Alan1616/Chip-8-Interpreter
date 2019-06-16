@@ -497,7 +497,7 @@ namespace Architecture
         private void LD_B_Vx(byte x)
         {
             byte hundreds = (byte) ((V[x] % 1000 - V[x]%100)/100);
-            byte tens = (byte)((V[x] % 100 - x%10)/10);
+            byte tens = (byte)((V[x] % 100 - V[x]%10)/10);
             byte ones = (byte)(V[x] % 10);
 
             m1.MemoryMap[I] = hundreds;
