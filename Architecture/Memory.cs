@@ -33,7 +33,7 @@ namespace Architecture
 
         public void LoadProgram(string location)
         {
-            BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
+            BinaryReader b1 = new BinaryReader(File.Open(location, FileMode.Open), System.Text.Encoding.BigEndianUnicode);
             int i = 0;
             while (b1.BaseStream.Position < b1.BaseStream.Length)
             {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Architecture;
+using System.Threading;
 
 namespace Chip_8_ConsoleDisplay
 {
@@ -13,12 +14,13 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {
             CPU c1 = new CPU();
-            c1.m1.LoadProgram("Chip8 Picture.ch8");
+            c1.m1.LoadProgram(@"heart_monitor.ch8");
 
 
             while (true)
             {
-                Console.WriteLine($"{c1.FullCycle():X4}");
+                //Console.WriteLine($"{ c1.FullCycle():X4}");
+                c1.FullCycle();
             }
 
             //BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);

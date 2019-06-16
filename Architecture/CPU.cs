@@ -8,6 +8,9 @@ namespace Architecture
 {
     public class CPU
     {
+
+        private byte nextKeyPressed;
+
         //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
         public byte[] V = new byte[16];
 
@@ -46,14 +49,17 @@ namespace Architecture
             I = 0;
         }
 
+        private delegate void DisplayDrawerDelegate();
+
         public void ExecuteOpcode(ushort opcode)
         {
             ushort nibble = (ushort)(opcode & 0xF000);
             byte x = (byte)((opcode & 0x0F00) >> 8);
             byte y = (byte)((opcode & 0x00F0) >> 4);
-            byte kk = (byte)((opcode & 0x0FF0) >> 4);
+            byte kk = (byte)((opcode & 0x00FF));
             byte n = (byte)((opcode & 0x000F) );
             ushort nnn = (ushort)((opcode & 0x0FFF));
+            DisplayDrawerDelegate d1 = new DisplayDrawerDelegate(Display.DrawDisplay);
             //Console.WriteLine($"{nibble:X}");
 
             switch (nibble)
@@ -152,6 +158,7 @@ namespace Architecture
                     break;
                 case 0xD000:
                     DRW_Vx_Vy(x, y, n);
+                    d1();
                     break;
                 case 0xE000:
                     switch (kk)
@@ -205,7 +212,7 @@ namespace Architecture
                     throw new Exception($"Nibble out of bound");
             }
         }
-
+   
 
         public ushort FullCycle()
         {
@@ -219,7 +226,6 @@ namespace Architecture
             if (DelayTimer > 0)
                 DelayTimer--;
             return decodedOpcode;
-            //update timers
         }
 
         private byte[] FetchOpcode()
@@ -244,26 +250,28 @@ namespace Architecture
         private void CLS()
         {
             Display.ClearDisplay();
-        }//1
+        }//1T
         //RET[2] - Sets the program counter to the address at the top of the stack, 
         //then subtracts 1 from the stack pointer.
         private void RET()
         {
-            PC = SP;
+            PC = Stack[SP];
             SP--;
-        }//2
+        }//2T
         //JP[3] - Sets the program counter to nnn.
         private void JP(ushort nnn)
         {
-            PC = nnn;
+            PC = (ushort)(nnn-2);
+            //PC = nnn;
         }//3
 
         private void CALL(ushort nnn)
         {
             SP++;
             Stack[SP] = PC;
-            PC = nnn;
-        }//4
+            PC = (ushort)(nnn - 2);
+            //PC = nnn;
+        }//4T
 
         private void SE_Vx(byte x, byte kk)
         {
@@ -440,21 +448,21 @@ namespace Architecture
 
 
 
-        }//23 need clarification.
+        }//23 
 
         private void SKP_Vx(byte x)
         {
-            //if (nextKeyPressed == V[x])
-            //    PC = (ushort)(PC + 2);
-            throw new NotImplementedException();
-        }//24 not imp
+            if (nextKeyPressed == V[x])
+                PC = (ushort)(PC + 2);
+            //throw new NotImplementedException();
+        }//24 not fully implemented
 
         private void SKNP_Vx(byte x)
         {
-            //if (nextKeyPressed != V[x])
-            //    PC = (ushort)(PC + 2);
-            throw new NotImplementedException();
-        }//25 not imp
+            if (nextKeyPressed != V[x])
+                PC = (ushort)(PC + 2);
+            // throw new NotImplementedException();
+        }//25 not fully implemented
 
         private void LD_Vx_DT(byte x)
         {
@@ -464,7 +472,7 @@ namespace Architecture
         private void LD_Vx_K(byte x)
         {
             V[x]=Byte.Parse(Console.ReadLine());
-        } //27 simulates waiting for keypress
+        } //27 simulates waiting for keypress - not fully implemented
 
         private void LD_DT_Vx(byte x)
         {
@@ -483,8 +491,8 @@ namespace Architecture
 
         private void LD_F_Vx(byte x)
         {
-            I = m1.MemoryMap[V[x] * 5];
-        }//31
+            I = (ushort)(V[x] * 5);
+        }//31 
 
         private void LD_B_Vx(byte x)
         {
