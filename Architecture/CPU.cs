@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -121,7 +122,7 @@ namespace Architecture
                             XOR_Vx_Vy(x, y);
                             break;
                         case 4:
-                            AND_Vx_Vy(x, y);
+                            ADD_Vx_Vy(x,y);
                             break;
                         case 5:
                             SUB_Vx_Vy(x, y);
@@ -212,21 +213,43 @@ namespace Architecture
                     throw new Exception($"Nibble out of bound");
             }
         }
-   
+
+        private Stopwatch watch = new Stopwatch();
 
         public ushort FullCycle()
         {
+            if (!watch.IsRunning)
+                watch.Start();
+            if (watch.ElapsedMilliseconds > 16)
+            {
+                DecrementeTimers();
+                watch.Reset();
+            }
+
+
             byte[] codedOpcode = FetchOpcode();
             ushort decodedOpcode = DecodeOpcode(codedOpcode);
             ExecuteOpcode(decodedOpcode);
             PC = (ushort)(PC + 2);
+            //if (SoundTimer > 0)
+            //    SoundTimer--;
+            //if (DelayTimer > 0)
+            //    DelayTimer--;
+            //DecrementeTimers();
 
-            if (SoundTimer > 0)
-                SoundTimer--;
-            if (DelayTimer > 0)
-                DelayTimer--;
+
             return decodedOpcode;
         }
+
+
+        public void DecrementeTimers()
+        {
+                if (SoundTimer > 0)
+                    SoundTimer--;
+                if (DelayTimer > 0)
+                    DelayTimer--;
+        }
+
 
         private byte[] FetchOpcode()
         {
@@ -471,7 +494,8 @@ namespace Architecture
 
         private void LD_Vx_K(byte x)
         {
-            V[x]=Byte.Parse(Console.ReadLine());
+            V[x] = Byte.Parse(Console.ReadLine());
+            //V[x] = 1;
         } //27 simulates waiting for keypress - not fully implemented
 
         private void LD_DT_Vx(byte x)

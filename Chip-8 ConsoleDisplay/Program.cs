@@ -14,13 +14,15 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {
             CPU c1 = new CPU();
-            c1.m1.LoadProgram(@"PONG");
+            c1.m1.LoadProgram(@"Pong.ch8");
 
 
             while (true)
             {
                 //Console.WriteLine($"{ c1.FullCycle():X4}");
                 c1.FullCycle();
+                //Console.WriteLine($"V[6]={c1.V[6]}");
+                //Console.WriteLine($"V[7]={c1.V[7]}");
             }
 
             //BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
