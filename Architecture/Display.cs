@@ -38,7 +38,6 @@ namespace Architecture
 
         public void DrawDisplay()
         {
-            //Console.Clear();
             Console.SetCursorPosition(0, 0);
             string line = "";
             for (int i = 0; i < 32; i++)

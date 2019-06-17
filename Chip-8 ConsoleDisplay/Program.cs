@@ -14,7 +14,7 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {
             CPU c1 = new CPU();
-            c1.m1.LoadProgram(@"Pong.ch8");
+            c1.m1.LoadProgram(@"TETRIS");
 
 
             while (true)

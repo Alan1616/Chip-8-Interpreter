@@ -3,15 +3,74 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Architecture
 {
-    public class CPU
+    public partial class CPU
     {
 
         private byte nextKeyPressed;
+        private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
+        private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
+        private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
 
+        private const int CPU_CLOCK = 600;
+
+
+        public CPU()
+        {
+            //opcodes mapping
+
+            MainOpcodeMap = new Dictionary<ushort, Action<Opcode>>
+            {
+                {0x0000, StartLookup },
+                {0x1000, JP },
+                {0x2000, CALL },
+                {0x3000, SE_Vx },
+                {0x4000, SNE_Vx },
+                {0x5000, SE_Vx_Vy },
+                {0x6000, LD_Vx },
+                {0x7000, ADD_Vx },
+                {0x8000, ArithmeticsOpcodeMapLookup },
+                {0x9000, SNE_Vx_Vy },
+                {0xA000, LD_I },
+                {0xB000, JP_V0 },
+                {0xC000, RND_Vx },
+                {0xD000, (opcode) => { DRW_Vx_Vy(opcode); Display.DrawDisplay(); } },
+                {0xE000, KeyboardLookup },
+                {0xF000, LoadsOpcodeMapLookup },
+            };
+
+            ArithmeticsOpcodeMap = new Dictionary<ushort, Action<Opcode>>
+            {
+                {0x00, LD_Vx_Vy },
+                {0x01, OR_Vx_Vy },
+                {0x02, AND_Vx_Vy },
+                {0x03, XOR_Vx_Vy },
+                {0x04, ADD_Vx_Vy },
+                {0x05, SUB_Vx_Vy },
+                {0x06, SHR_Vx_Vy },
+                {0x07, SUBN_Vx_Vy },
+                {0x0E, SHL_Vx_Vy },
+            };
+
+            LoadsOpcodeMap = new Dictionary<ushort, Action<Opcode>>
+            {
+                {0x07, LD_Vx_DT },
+                {0x0A, LD_Vx_K },
+                {0x15, LD_DT_Vx },
+                {0x18, LD_ST_Vx },
+                {0x1E, ADD_I_Vx },
+                {0x29, LD_F_Vx },
+                {0x33, LD_B_Vx },
+                {0x55, LD_I_Vx },
+                {0x65, LD_Vx_I },
+            };
+
+        }
+            
         //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
         public byte[] V = new byte[16];
 
@@ -37,7 +96,7 @@ namespace Architecture
 
         public Memory m1 = new Memory();
 
-        public void Initialize()
+        private void Initialize()
         {
             Display.ClearDisplay();
             m1 = new Memory();
@@ -49,214 +108,62 @@ namespace Architecture
             SP = 0;
             I = 0;
         }
+ 
+        private Stopwatch timersWatch = new Stopwatch();
+        private Stopwatch cycleWatch = new Stopwatch();
 
-        private delegate void DisplayDrawerDelegate();
-
-        public void ExecuteOpcode(ushort opcode)
+        public void FullCycle()
         {
-            ushort nibble = (ushort)(opcode & 0xF000);
-            byte x = (byte)((opcode & 0x0F00) >> 8);
-            byte y = (byte)((opcode & 0x00F0) >> 4);
-            byte kk = (byte)((opcode & 0x00FF));
-            byte n = (byte)((opcode & 0x000F) );
-            ushort nnn = (ushort)((opcode & 0x0FFF));
-            DisplayDrawerDelegate d1 = new DisplayDrawerDelegate(Display.DrawDisplay);
-            //Console.WriteLine($"{nibble:X}");
-
-            switch (nibble)
-            {
-                case 0x0000:
-                    switch (n)
-                    {
-                        case 0x00:
-                            CLS();
-                            break;
-                        case 0x0E:
-                            RET();
-                            break;
-                        default:
-                            throw new Exception($"Unknown opcode = {opcode}");
-                    }
-                    break;
-                case 0x1000:
-                    JP(nnn);
-                    break;
-                case 0x2000:
-                    CALL(nnn);
-                    break;
-                case 0x3000:
-                    SE_Vx(x, kk);
-                    break;
-                case 0x4000:
-                    SNE_Vx(x, kk);
-                    break;
-                case 0x5000:
-                    if (n==0)
-                    {
-                        SE_Vx_Vy(x, y);
-                        break;
-                    }
-                    else
-                    {
-                        throw new Exception($"Unknown opcode = {opcode}");
-                    }
-                case 0x6000:
-                    LD_Vx(x, kk);
-                    break;
-                case 0x7000:
-                    ADD_Vx(x, kk);
-                    break;
-                case 0x8000:
-                    switch (n)
-                    {
-                        case 0:
-                            LD_Vx_Vy(x, y);
-                            break;
-                        case 1:
-                            OR_Vx_Vy(x, y);
-                            break;
-                        case 2:
-                            AND_Vx_Vy(x, y);
-                            break;
-                        case 3:
-                            XOR_Vx_Vy(x, y);
-                            break;
-                        case 4:
-                            ADD_Vx_Vy(x,y);
-                            break;
-                        case 5:
-                            SUB_Vx_Vy(x, y);
-                            break;
-                        case 6:
-                            SHR_Vx_Vy(x, y);
-                            break;
-                        case 7:
-                            SUBN_Vx_Vy(x, y);
-                            break;
-                        case 14:
-                            SHL_Vx_Vy(x, y);
-                            break;
-                    }
-                    break;
-                case 0x9000:
-                    if (n == 0)
-                    {
-                        SNE_Vx_Vy(x, y);
-                        break;
-                    }
-                    else
-                    {
-                        throw new Exception($"Unknown opcode = {opcode}");
-                    }
-                case 0xA000:
-                    LD_I(nnn);
-                    break;
-                case 0xB000:
-                    JP_V0(nnn);
-                    break;
-                case 0xC000:
-                    RND_Vx(x, kk, random);
-                    break;
-                case 0xD000:
-                    DRW_Vx_Vy(x, y, n);
-                    d1();
-                    break;
-                case 0xE000:
-                    switch (kk)
-                    {
-                        case 0x9E:
-                            SKP_Vx(x);
-                            break;
-                        case 0xA1:
-                            SKNP_Vx(x);
-                            break;
-                        default:
-                            throw new Exception($"Unknown opcode = {opcode}");
-                    }
-                    break;
-                case 0xF000:
-                    switch (kk)
-                    {
-                        case 0x07:
-                            LD_Vx_DT(x);
-                            break;
-                        case 0x0A:
-                            LD_Vx_K(x);
-                            break;
-                        case 0x15:
-                            LD_DT_Vx(x);
-                            break;
-                        case 0x18:
-                            LD_ST_Vx(x);
-                            break;
-                        case 0x1E:
-                            ADD_I_Vx(x);
-                            break;
-                        case 0x29:
-                            LD_F_Vx(x);
-                            break;
-                        case 0x33:
-                            LD_B_Vx(x);
-                            break;
-                        case 0x55:
-                            LD_I_Vx(x);
-                            break;
-                        case 0x65:
-                            LD_Vx_I(x);
-                            break;
-                        default:
-                            throw new Exception($"Unknown opcode = {opcode}");
-                    }
-                    break;
-
-                default:
-                    throw new Exception($"Nibble out of bound");
-            }
-        }
-
-        private Stopwatch watch = new Stopwatch();
-
-        public ushort FullCycle()
-        {
-            if (!watch.IsRunning)
-                watch.Start();
-            if (watch.ElapsedMilliseconds > 16)
+            if (!timersWatch.IsRunning)
+                timersWatch.Start();
+            if (timersWatch.ElapsedMilliseconds > 16)
             {
                 DecrementeTimers();
-                watch.Reset();
+                timersWatch.Reset();
+            }
+            if (!cycleWatch.IsRunning)
+                cycleWatch.Start();
+
+            if (cycleWatch.ElapsedMilliseconds > (1000 / CPU_CLOCK))
+            {
+                byte[] codedOpcode = FetchOpcode();
+                ushort decodedOpcode = DecodeOpcode(codedOpcode);
+                Opcode opcode = new Opcode(decodedOpcode);
+
+
+                if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
+                {
+                    MainOpcodeMap[(opcode.FirstNibble)](opcode);
+                }
+                else
+                {
+                    throw new Exception($"Uknown Opcode {opcode.FullCode}");
+                }
+
+                PC = (ushort)(PC + 2);
+                cycleWatch.Reset();
+                //Thread.Sleep(1000);
             }
 
-
-            byte[] codedOpcode = FetchOpcode();
-            ushort decodedOpcode = DecodeOpcode(codedOpcode);
-            ExecuteOpcode(decodedOpcode);
-            PC = (ushort)(PC + 2);
-            //if (SoundTimer > 0)
-            //    SoundTimer--;
-            //if (DelayTimer > 0)
-            //    DelayTimer--;
-            //DecrementeTimers();
-
-
-            return decodedOpcode;
+            //return decodedOpcode;
         }
 
-
-        public void DecrementeTimers()
+        private void DecrementeTimers()
         {
-                if (SoundTimer > 0)
-                    SoundTimer--;
-                if (DelayTimer > 0)
-                    DelayTimer--;
+            if (SoundTimer == 1)
+                Console.Beep(500, 500);
+            if (SoundTimer > 0)
+                SoundTimer--;
+            if (DelayTimer > 0)
+                DelayTimer--;
         }
-
 
         private byte[] FetchOpcode()
         {
             byte[] output = new byte[2];
 
             output[0] = m1.MemoryMap[PC];
-            output[1] = m1.MemoryMap[PC+1];
+            output[1] = m1.MemoryMap[PC + 1];
 
             return output;
         }
@@ -268,287 +175,46 @@ namespace Architecture
             return output;
         }
 
-        //NameOfInstruction[Number of instruction] - short description
-        //CLS[1] - Clear the display.
-        private void CLS()
+        private void ArithmeticsOpcodeMapLookup(Opcode opcode)
         {
-            Display.ClearDisplay();
-        }//1T
-        //RET[2] - Sets the program counter to the address at the top of the stack, 
-        //then subtracts 1 from the stack pointer.
-        private void RET()
-        {
-            PC = Stack[SP];
-            SP--;
-        }//2T
-        //JP[3] - Sets the program counter to nnn.
-        private void JP(ushort nnn)
-        {
-            PC = (ushort)(nnn-2);
-            //PC = nnn;
-        }//3
-
-        private void CALL(ushort nnn)
-        {
-            SP++;
-            Stack[SP] = PC;
-            PC = (ushort)(nnn - 2);
-            //PC = nnn;
-        }//4T
-
-        private void SE_Vx(byte x, byte kk)
-        {
-            if (V[x] == kk)
+            if (ArithmeticsOpcodeMap.ContainsKey(opcode.N))
             {
-                PC = (ushort)(PC + 2);
-            }
-        }//5
-
-        private void SNE_Vx(byte x, byte kk)
-        {
-            if (V[x] != kk)
-            {
-                PC = (ushort)(PC + 2);
-            }
-        }//6
-
-        private void SE_Vx_Vy(byte x, byte y)
-        {
-            if (V[x] == V[y])
-            {
-                PC = (ushort)(PC + 2);
-            }
-        }//7
-
-        private void LD_Vx(byte x, byte kk)
-        {
-            V[x] = kk;
-        }//8
-
-        private void ADD_Vx(byte x, byte kk)
-        {
-            V[x] = (byte)(V[x] + kk);
-        }//9
-
-        private void LD_Vx_Vy(byte x, byte y)
-        {
-            V[x] = V[y];
-        }//10
-
-        private void OR_Vx_Vy(byte x, byte y)
-        {
-            V[x] =(byte) (V[x] | V[y]);
-        }//11
-
-        private void AND_Vx_Vy(byte x, byte y)
-        {
-            V[x] = (byte)(V[x] & V[y]);
-        }//12
-
-        private void XOR_Vx_Vy(byte x, byte y)
-        {
-            V[x] = (byte)(V[x] ^ V[y]);
-        }//13
-
-        private void ADD_Vx_Vy(byte x, byte y)
-        {
-            ushort sum = (ushort)(V[x] + V[y]);
-            if (sum > 255)
-            {
-                V[15] = 1;
+                ArithmeticsOpcodeMap[opcode.N](opcode); 
             }
             else
-            {
-                V[15] = 0;
-            }
-            V[x] = (byte)(sum & 0x00FF);
-
-        }//14
-
-        private void SUB_Vx_Vy(byte x, byte y)//15
-        {
-            if (V[x] > V[y])
-            {
-                V[15] = 1;
-            }
-            else
-            {
-                V[15] = 0;
-            }
-            V[x] = (byte)((V[x] - V[y]) & 0x00FF);
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
 
         }
 
-        private void SHR_Vx_Vy(byte x, byte y)
+        private void LoadsOpcodeMapLookup(Opcode opcode)
         {
-            if (V[x]%2==1)
+            if (LoadsOpcodeMap.ContainsKey(opcode.KK))
             {
-                V[15] = 1;
+                LoadsOpcodeMap[opcode.KK](opcode); 
             }
             else
-            {
-                V[15] = 0;
-            }
-            V[x] = (byte)(V[x] / 2);
-        }//16
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
+        }
 
-        private void SUBN_Vx_Vy(byte x, byte y)
+        private void KeyboardLookup(Opcode opcode)
         {
-            if (V[y] > V[x])
-            {
-                V[15] = 1;
-            }
+            if (opcode.KK == 0x9E)
+                SKP_Vx(opcode);
+            else if (opcode.KK == 0xA1)
+                SKNP_Vx(opcode);
             else
-            {
-                V[15] = 0;
-            }
-            V[x] = (byte)((V[y] - V[x]) & 0x00FF);
-        }//17
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
+        }
 
-        private void SHL_Vx_Vy(byte x, byte y)
+        private void StartLookup(Opcode opcode)
         {
-            if ((byte)(V[x] & 0x80)==0x80)
-            {
-                V[15] = 1;
-            }
+            if (opcode.KK == 0xE0)
+                CLS(opcode);
+            else if (opcode.KK == 0xEE)
+                RET(opcode);
             else
-            {
-                V[15] = 0;
-            }
-            V[x] = (byte)(V[x] * 2);
-        }//18
-
-        private void SNE_Vx_Vy(byte x, byte y)
-        {
-            if (V[x]!=V[y])
-            {
-                PC = (ushort)(PC + 2);
-            }
-        }//19
-
-        private void LD_I(ushort nnn)
-        {
-            I = nnn;
-        }//20
-
-        private void JP_V0(ushort nnn)
-        {
-            PC = (ushort)(nnn + V[0]);
-        }//21
-
-        private void RND_Vx(byte x, byte kk, Random random)
-        {
-            byte rand = (byte)(random.Next(0,256));
-            V[x] = (byte)(rand & kk);
-        }//22
-
-        private void DRW_Vx_Vy(byte x, byte y, byte n)
-        {
-            V[15] = 0;
-            byte[] pixels = new byte[n];
-            byte xCoordinate = V[x];
-            byte yCoordinate = V[y];
-
-            for (int i = 0; i < n; i++)
-            {
-                pixels[i] = m1.MemoryMap[I + i];
-            }
-
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    if ((pixels[i] & (0x80 >> j)) != 0)
-                    {
-                        bool flag = Display.XORPixel((ushort)((xCoordinate + j + (yCoordinate + i) * 64)));
-                        if (flag)
-                        {
-                            V[15] = 1;
-                        }
-                    }
-                }
-            }
-
-
-
-        }//23 
-
-        private void SKP_Vx(byte x)
-        {
-            if (nextKeyPressed == V[x])
-                PC = (ushort)(PC + 2);
-            //throw new NotImplementedException();
-        }//24 not fully implemented
-
-        private void SKNP_Vx(byte x)
-        {
-            if (nextKeyPressed != V[x])
-                PC = (ushort)(PC + 2);
-            // throw new NotImplementedException();
-        }//25 not fully implemented
-
-        private void LD_Vx_DT(byte x)
-        {
-            V[x] = DelayTimer;
-        }//26
-
-        private void LD_Vx_K(byte x)
-        {
-            V[x] = Byte.Parse(Console.ReadLine());
-            //V[x] = 1;
-        } //27 simulates waiting for keypress - not fully implemented
-
-        private void LD_DT_Vx(byte x)
-        {
-            DelayTimer = V[x];
-        }//28
-
-        private void LD_ST_Vx(byte x)
-        {
-            SoundTimer = V[x];
-        }//29
-
-        private void ADD_I_Vx(byte x)
-        {
-            I = (ushort)(I + V[x]);
-        }//30
-
-        private void LD_F_Vx(byte x)
-        {
-            I = (ushort)(V[x] * 5);
-        }//31 
-
-        private void LD_B_Vx(byte x)
-        {
-            byte hundreds = (byte) ((V[x] % 1000 - V[x]%100)/100);
-            byte tens = (byte)((V[x] % 100 - V[x]%10)/10);
-            byte ones = (byte)(V[x] % 10);
-
-            m1.MemoryMap[I] = hundreds;
-            m1.MemoryMap[I + 1] = tens;
-            m1.MemoryMap[I + 2] = ones;
-        }//32
-
-        private void LD_I_Vx(byte x)
-        {
-            for (int i = 0; i <= x; i++)
-            {
-                m1.MemoryMap[I + i] = V[i];
-            }
-        }//33
-
-        private void LD_Vx_I(byte x)
-        {
-            for (int i = 0; i <= x; i++)
-            {
-                V[i] = m1.MemoryMap[I + i]; 
-            }
-        }//34 
-
-        private void SYS(ushort nnn)
-        {
-            throw new NotImplementedException();
-        }//0 not imp - propably not nescesey
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
+        }
 
 
     }
