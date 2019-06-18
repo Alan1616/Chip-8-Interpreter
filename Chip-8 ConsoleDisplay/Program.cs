@@ -14,16 +14,22 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {
             CPU c1 = new CPU();
-            c1.m1.LoadProgram(@"TETRIS");
+            c1.m1.LoadProgram(@"PONG");
 
 
-            while (true)
-            {
-                //Console.WriteLine($"{ c1.FullCycle():X4}");
-                c1.FullCycle();
-                //Console.WriteLine($"V[6]={c1.V[6]}");
-                //Console.WriteLine($"V[7]={c1.V[7]}");
-            }
+            //do
+            //{
+            //    c1.FullCycle();
+            //} while (!signaled);
+
+            //while (true)
+            //{
+            //    //Console.WriteLine($"{ c1.FullCycle():X4}");
+            c1.FullCycle();
+            //    //Thread.Sleep(1);
+            //    //Console.WriteLine($"V[6]={c1.V[6]}");
+            //    //Console.WriteLine($"V[7]={c1.V[7]}");
+            //}
 
             //BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
             //while (b1.BaseStream.Position < b1.BaseStream.Length)

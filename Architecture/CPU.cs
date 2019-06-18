@@ -114,44 +114,57 @@ namespace Architecture
 
         public void FullCycle()
         {
-            if (!timersWatch.IsRunning)
-                timersWatch.Start();
-            if (timersWatch.ElapsedMilliseconds > 16)
+
+            bool createdNew;
+            var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, "CF2D4313-33DE-489D-9721-6AFF69841DEA", out createdNew);
+            var signaled = false;
+
+            while (!signaled)
             {
-                DecrementeTimers();
-                timersWatch.Reset();
-            }
-            if (!cycleWatch.IsRunning)
-                cycleWatch.Start();
-
-            if (cycleWatch.ElapsedMilliseconds > (1000 / CPU_CLOCK))
-            {
-                byte[] codedOpcode = FetchOpcode();
-                ushort decodedOpcode = DecodeOpcode(codedOpcode);
-                Opcode opcode = new Opcode(decodedOpcode);
-
-
-                if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
+                if (!timersWatch.IsRunning)
+                    timersWatch.Start();
+                if (timersWatch.Elapsed.TotalMilliseconds > 16)
                 {
-                    MainOpcodeMap[(opcode.FirstNibble)](opcode);
+                    DecrementeTimers();
+                    timersWatch.Reset();
                 }
+                if (!cycleWatch.IsRunning)
+                    cycleWatch.Start();
+
+                if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPU_CLOCK))
+                {
+                    byte[] codedOpcode = FetchOpcode();
+                    ushort decodedOpcode = DecodeOpcode(codedOpcode);
+                    Opcode opcode = new Opcode(decodedOpcode);
+
+
+                    if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
+                    {
+                        MainOpcodeMap[(opcode.FirstNibble)](opcode);
+                    }
+                    else
+                    {
+                        throw new Exception($"Uknown Opcode {opcode.FullCode}");
+                    }
+
+                    PC = (ushort)(PC + 2);
+                    cycleWatch.Reset();
+                    //Thread.Sleep(1000);
+                } 
                 else
-                {
-                    throw new Exception($"Uknown Opcode {opcode.FullCode}");
-                }
-
-                PC = (ushort)(PC + 2);
-                cycleWatch.Reset();
-                //Thread.Sleep(1000);
+                    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
             }
 
             //return decodedOpcode;
         }
 
+     
+        Action beep = ConsoleBeep;
+
         private void DecrementeTimers()
         {
             if (SoundTimer == 1)
-                Console.Beep(500, 500);
+            beep.BeginInvoke((a) => { beep.EndInvoke(a); }, null);
             if (SoundTimer > 0)
                 SoundTimer--;
             if (DelayTimer > 0)
@@ -214,6 +227,11 @@ namespace Architecture
                 RET(opcode);
             else
                 throw new Exception($"Uknown Opcode {opcode.FullCode}");
+        }
+
+        private static void ConsoleBeep()
+        {
+            Console.Beep(500, 500);
         }
 
 
