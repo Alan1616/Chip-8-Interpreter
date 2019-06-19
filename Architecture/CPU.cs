@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace Architecture
 {
     public partial class CPU
@@ -38,7 +39,7 @@ namespace Architecture
                 {0xA000, LD_I },
                 {0xB000, JP_V0 },
                 {0xC000, RND_Vx },
-                {0xD000, (opcode) => { DRW_Vx_Vy(opcode); Display.DrawDisplay(); } },
+                {0xD000, (opcode) => { DRW_Vx_Vy(opcode); /*Display.DrawDisplay();*/ Display.UpdatePixelData(); } },
                 {0xE000, KeyboardLookup },
                 {0xF000, LoadsOpcodeMapLookup },
             };
@@ -96,6 +97,8 @@ namespace Architecture
 
         public Memory m1 = new Memory();
 
+        public bool[] keyState = new bool[16];
+
         private void Initialize()
         {
             Display.ClearDisplay();
@@ -114,13 +117,12 @@ namespace Architecture
 
         public void FullCycle()
         {
-
             bool createdNew;
             var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, "CF2D4313-33DE-489D-9721-6AFF69841DEA", out createdNew);
             var signaled = false;
 
-            while (!signaled)
-            {
+            //while (!signaled)
+            //{
                 if (!timersWatch.IsRunning)
                     timersWatch.Start();
                 if (timersWatch.Elapsed.TotalMilliseconds > 16)
@@ -151,9 +153,9 @@ namespace Architecture
                     cycleWatch.Reset();
                     //Thread.Sleep(1000);
                 } 
-                else
-                    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
-            }
+                //else
+                //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
+            //}
 
             //return decodedOpcode;
         }

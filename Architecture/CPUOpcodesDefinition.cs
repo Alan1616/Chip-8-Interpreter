@@ -211,15 +211,21 @@ namespace Architecture
 
         private void SKP_Vx(Opcode opcode)
         {
-            if (nextKeyPressed == V[opcode.X])
+            //if (nextKeyPressed == V[opcode.X])
+            if (keyState[V[opcode.X]] == true)
+            {
                 PC = (ushort)(PC + 2);
+            }
             //throw new NotImplementedException();
         }//24 not fully implemented
 
         private void SKNP_Vx(Opcode opcode)
         {
-            if (nextKeyPressed != V[opcode.X])
+            //if (nextKeyPressed != V[opcode.X])
+            if (keyState[V[opcode.X]]==false)
+            {
                 PC = (ushort)(PC + 2);
+            }           
             // throw new NotImplementedException();
         }//25 not fully implemented
 

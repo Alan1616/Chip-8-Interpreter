@@ -10,6 +10,7 @@ namespace Architecture
     public class Display
     {
         public bool[] Pixels = new bool[64 * 32];
+        public uint[] PixelsData = new uint[64 * 32];
 
 
         public void ClearDisplay()
@@ -66,6 +67,29 @@ namespace Architecture
             }
         }
 
+        public void UpdatePixelData()
+        {
+            for (int i = 0; i < 32; i++)
+            {
+                for (int j = 0; j < 64; j++)
+                {
+                    if (Pixels[j + i * 64])
+                    {
+                        PixelsData[j + i * 64] = 0xFFFFFFFF;
+
+                    }
+                    else
+                    {
+                        //Console.SetCursorPosition(j, i);
+                        PixelsData[j + i * 64] = 0x00000000;
+                        
+                        //line += " ";
+                    }
+                }
+                //Thread.Sleep(16);
+
+            }
+        }
 
     }
 }
