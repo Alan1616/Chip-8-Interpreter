@@ -37,12 +37,13 @@ namespace Chip_8_ConsoleDisplay
                 switch (command)
                 {
                     case "Help":
-                        Console.WriteLine("Run - to run a program from specified ROM source");
-                        Console.WriteLine("LoadRom \"roamtoload\" - specify ROM source");
-                        Console.WriteLine("SetClockRate [target frequency in Hz] for example SetCPUFreq 500 sets CPU frequency to 500 MHZ (range 200-1200), defualt is 600 ");
-                        Console.WriteLine("FalloutMode [on/off] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
-                        Console.WriteLine("Quit - Bye!!");
-                        Console.WriteLine("SuperChipMode [on/off] - Allows to run SuperChip-8 programs - not implemented yet so don't bother");
+                        Console.WriteLine("->Example of invoking command  >LoadRom TETRIS or >SetClockRate 200");
+                        Console.WriteLine("->Run - to run a program from specified ROM source");
+                        Console.WriteLine("->LoadRom \"roamtoload\" - specify ROM source");
+                        Console.WriteLine("->SetClockRate [target frequency in Hz] for example SetCPUFreq 500 sets CPU frequency to 500 HZ (range 200-2000), defualt is 600 ");
+                        Console.WriteLine("->FalloutMode [on/off] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
+                        Console.WriteLine("->Quit - Bye!!");
+                        Console.WriteLine("->SuperChipMode [on/off] - Allows to run SuperChip-8 programs - not implemented yet so don't bother");
                         break;
                     case "Run":
                         if (c1.Memory.currentROMPath != null)
@@ -57,12 +58,29 @@ namespace Chip_8_ConsoleDisplay
                         }
                         break;
                     case "LoadRom":
-                        c1.Memory.LoadProgram($@"{value}");
-                        Console.WriteLine($"> Program {c1.Memory.currentROMPath} loaded!");
+                        if (File.Exists(value))
+                        {
+                            c1.Memory.LoadProgram($@"{value}");
+                            Console.WriteLine($">Program {c1.Memory.currentROMPath} loaded!");
+                        }
+                        else
+                        {
+                            Console.WriteLine(">Unable to load specifed file check if file exists");
+                        }
                         break;
                     case "SetClockRate":
-                        c1.CPUClockRate = int.Parse(value);
-                        Console.WriteLine($">Current cpu frequency = {c1.CPUClockRate} Hz");
+                        int clock = 0;
+                        bool isGood = false;
+                        isGood = int.TryParse(value, out clock);
+                        if (isGood && clock >= 200 && clock <= 2000)
+                        {
+                            c1.CPUClockRate = int.Parse(value);
+                            Console.WriteLine($">Current cpu frequency = {c1.CPUClockRate} Hz");
+                        }
+                        else
+                        {
+                            Console.WriteLine(">Specified value is out of range");
+                        }
                         break;
                     case "FalloutMode":
                         if (value == "on")
