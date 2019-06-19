@@ -10,8 +10,7 @@ namespace Architecture
     public class Memory
     {
         public byte[] MemoryMap = new byte[4096];
-        //private ushort fontStartLocation = 0;
-
+        public string currentROMPath;
 
         public Memory()
         {
@@ -33,6 +32,7 @@ namespace Architecture
 
         public void LoadProgram(string location)
         {
+            currentROMPath = location;
             BinaryReader b1 = new BinaryReader(File.Open(location, FileMode.Open), System.Text.Encoding.BigEndianUnicode);
             int i = 0;
             while (b1.BaseStream.Position < b1.BaseStream.Length)

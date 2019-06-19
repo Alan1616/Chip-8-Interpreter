@@ -12,12 +12,12 @@ namespace Architecture
     public partial class CPU
     {
 
-        private byte nextKeyPressed;
+       
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
 
-        private const int CPU_CLOCK = 600;
+        public  int CPU_CLOCK = 600;
 
 
         public CPU()

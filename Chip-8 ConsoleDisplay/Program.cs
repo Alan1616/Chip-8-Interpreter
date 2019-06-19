@@ -15,155 +15,84 @@ namespace Chip_8_ConsoleDisplay
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Welcome to my Chip-8 Emulator! type in Help for comands!");
             bool isRunning = false;
-
-            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
+            CPU c1 = new CPU();
+            while (isRunning == false)
             {
-                Console.WriteLine("SDL failed to init.");
+                string line = "";
+                line = Console.ReadLine();
+                string command;
+                string value ="0";
+                if (line.Contains(" "))
+                {
+                    command = line.Substring(0, line.IndexOf(' '));
+                    value = line.Substring(line.IndexOf(' ')+1);
+                }
+                else
+                    command = line;
+                switch (command)
+                {
+                    case "Help":
+                        Console.WriteLine("Run - to run a program from specified ROM source");
+                        Console.WriteLine("LoadRom \"roamtoload\" - specify ROM source");
+                        Console.WriteLine("SetCPUFreq [target freq in MHz] for example SetCPUFreq 500 sets CPU frequency to 500 MHZ (range 200-1200), defualt is 600 ");
+                        Console.WriteLine("FalloutMode [on/off] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
+                        Console.WriteLine("Quit - Bye!!");
+                        Console.WriteLine("SuperChipMode [on/off] - Allows to run SuperChip-8 programs - not implemented yet so don't bother");
+                        break;
+                    case "Run":
+                        isRunning = true;
+                        Console.Clear();
+                        Console.WriteLine($"Runing game from specified {c1.m1.currentROMPath} file ROM with CPUFrequency = {c1.CPU_CLOCK} MHz enjoy!!!!");
+                        break;
+                    case "LoadRom":
+                        c1.m1.LoadProgram($@"{value}");
+                        break;
+                    case "SetCPUFreq":
+                        c1.CPU_CLOCK = int.Parse(value);
+                        Console.WriteLine($"Current cpu frequency is = {value} MHz");
+                        break;
+
+                    default:
+                        Console.WriteLine("Unknown Command");
+                        break;
+                }
+                //Console.WriteLine(value);
             }
 
-            IntPtr window =  SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 640, 320, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-            IntPtr renderer = SDL.SDL_CreateRenderer(window, -1, 0);
 
-            SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+            
+            if (isRunning)
+            {
+                SDLWindowDisplay s1 = new SDLWindowDisplay(c1);
+                while (isRunning)
+                {
+                    //    //Console.WriteLine($"{ c1.FullCycle():X4}");
+                    s1.HandleEvents(ref isRunning);
+                    c1.FullCycle();
+                    s1.render();
+                    //Thread.Sleep(1);
+                    //    //Thread.Sleep(1);
+                    //    //Console.WriteLine($"V[6]={c1.V[6]}");
+                    //    //Console.WriteLine($"V[7]={c1.V[7]}");
+                }
+                s1.Quit();
+            }
 
-            isRunning = true;
-
-
-            CPU c1 = new CPU();
-            c1.m1.LoadProgram(@"INVADERS");
-            IntPtr sdlSurface = IntPtr.Zero;
-            IntPtr sdlTexture = IntPtr.Zero;
 
             //do
             //{
             //    c1.FullCycle();
             //} while (!signaled);
 
-            while (isRunning)
-            {
-                //    //Console.WriteLine($"{ c1.FullCycle():X4}");
-                HandleEvents(ref isRunning,c1);
-                c1.FullCycle();
-
-                GCHandle displayHande = GCHandle.Alloc(c1.Display.PixelsData, GCHandleType.Pinned);
-
-                if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
-
-                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-                sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
-                SDL.SDL_FreeSurface(sdlSurface);
-                displayHande.Free();
-                //add to render
-                SDL.SDL_RenderClear(renderer);
-                SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
-                SDL.SDL_RenderPresent(renderer);
-
-                //Thread.Sleep(1);
-
-
-                //Render(renderer, c1, sdlSurface, sdlTexture);
-                //    //Thread.Sleep(1);
-                //    //Console.WriteLine($"V[6]={c1.V[6]}");
-                //    //Console.WriteLine($"V[7]={c1.V[7]}");
-            }
-
-            //BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
-            //while (b1.BaseStream.Position < b1.BaseStream.Length)
-            //{
-            //    ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
-            //    Console.WriteLine($"{opcode:X4}");
-
-            //    //c1.ExecuteOpcode(opcode);
-            //}
-
-            //b1.Close();
-
-
-            SDL.SDL_DestroyWindow(window);
-            SDL.SDL_DestroyRenderer(renderer);
-            SDL.SDL_Quit();
-
+           
+    
 
             Console.ReadKey();
         }
 
-        private static void HandleEvents(ref bool isRunning, CPU c1)
-        {
-            SDL.SDL_Event ev;
-            SDL.SDL_PollEvent(out ev);
-            int key;
-            switch (ev.type)
-            {
-                case SDL.SDL_EventType.SDL_QUIT:
-                    isRunning = false;
-                    break;
-                case SDL.SDL_EventType.SDL_KEYDOWN:
-                    c1.keyState[mapKey(ev)] = true;
-                    //Console.WriteLine(ev.key.keysym.sym.ToString());
-                    break;
-                case SDL.SDL_EventType.SDL_KEYUP:
-                    c1.keyState[mapKey(ev)] = false;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-
-        private static int mapKey(SDL.SDL_Event ev)
-        {
-            int output= 0;
-
-            if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_0)
-            {
-                output = 0;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_1)
-            {
-                output = 1;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_2)
-            {
-                output = 2;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_3)
-            {
-                output = 3;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_4)
-            {
-                output = 4;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_5)
-            {
-                output = 5;
-            }
-            else if (ev.key.keysym.sym == SDL.SDL_Keycode.SDLK_6)
-            {
-                output = 6;
-            }
-
-            return output;
-        }
-
-
-        private static void Render(IntPtr renderer, CPU c1, IntPtr sdlSurface, IntPtr sdlTexture)
-        {
-            GCHandle displayHande = GCHandle.Alloc(c1.Display.PixelsData, GCHandleType.Pinned);
-
-            if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
-
-            sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-            sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
-            SDL.SDL_FreeSurface(sdlSurface);
-            displayHande.Free();
-            //add to render
-            SDL.SDL_RenderClear(renderer);
-            SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
-            SDL.SDL_RenderPresent(renderer);
-        }
+      
 
         private static ushort ConvertUInt16ToBigEndian(ushort value)
         {
@@ -175,3 +104,13 @@ namespace Chip_8_ConsoleDisplay
 
     }
 }
+//BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
+//while (b1.BaseStream.Position < b1.BaseStream.Length)
+//{
+//    ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
+//    Console.WriteLine($"{opcode:X4}");
+
+//    //c1.ExecuteOpcode(opcode);
+//}
+
+//b1.Close();
