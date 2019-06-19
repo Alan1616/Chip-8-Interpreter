@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Architecture
 {
+    /// <summary>
+    /// Opcode structure used
+    /// to parse full data from 
+    /// certain opcod.
+    /// </summary>
     internal struct Opcode
     {
         private ushort fullCode;

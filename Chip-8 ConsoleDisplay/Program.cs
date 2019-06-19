@@ -15,12 +15,15 @@ namespace Chip_8_ConsoleDisplay
     {
         static void Main(string[] args)
         {
+
             Console.WriteLine("Welcome to my Chip-8 Emulator! type in Help for comands!");
             bool isRunning = false;
+            bool falloutModeFlag = false;
             CPU c1 = new CPU();
             while (isRunning == false)
             {
                 string line = "";
+                Console.Write(">");
                 line = Console.ReadLine();
                 string command;
                 string value ="0";
@@ -36,36 +39,64 @@ namespace Chip_8_ConsoleDisplay
                     case "Help":
                         Console.WriteLine("Run - to run a program from specified ROM source");
                         Console.WriteLine("LoadRom \"roamtoload\" - specify ROM source");
-                        Console.WriteLine("SetCPUFreq [target freq in MHz] for example SetCPUFreq 500 sets CPU frequency to 500 MHZ (range 200-1200), defualt is 600 ");
+                        Console.WriteLine("SetClockRate [target frequency in Hz] for example SetCPUFreq 500 sets CPU frequency to 500 MHZ (range 200-1200), defualt is 600 ");
                         Console.WriteLine("FalloutMode [on/off] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
                         Console.WriteLine("Quit - Bye!!");
                         Console.WriteLine("SuperChipMode [on/off] - Allows to run SuperChip-8 programs - not implemented yet so don't bother");
                         break;
                     case "Run":
-                        isRunning = true;
-                        Console.Clear();
-                        Console.WriteLine($"Runing game from specified {c1.m1.currentROMPath} file ROM with CPUFrequency = {c1.CPU_CLOCK} MHz enjoy!!!!");
+                        if (c1.Memory.currentROMPath != null)
+                        {
+                            isRunning = true;
+                            Console.Clear();
+                            Console.WriteLine($">Runing game from specified {c1.Memory.currentROMPath} file ROM with CPUFrequency = {c1.CPUClockRate} Hz enjoy!!!!");
+                        }
+                        else
+                        {
+                            Console.WriteLine(">You propably should load your cartridge first ^-^");
+                        }
                         break;
                     case "LoadRom":
-                        c1.m1.LoadProgram($@"{value}");
+                        c1.Memory.LoadProgram($@"{value}");
+                        Console.WriteLine($"> Program {c1.Memory.currentROMPath} loaded!");
                         break;
-                    case "SetCPUFreq":
-                        c1.CPU_CLOCK = int.Parse(value);
-                        Console.WriteLine($"Current cpu frequency is = {value} MHz");
+                    case "SetClockRate":
+                        c1.CPUClockRate = int.Parse(value);
+                        Console.WriteLine($">Current cpu frequency = {c1.CPUClockRate} Hz");
                         break;
-
+                    case "FalloutMode":
+                        if (value == "on")
+                        {
+                            falloutModeFlag = true;
+                            Console.WriteLine(">FalloutMode enabled");
+                        }
+                        else if (value == "off")
+                        {
+                            falloutModeFlag = false;
+                            Console.WriteLine(">FalloutMode disabled");
+                        }
+                        else
+                        {
+                            Console.WriteLine(">Wrong value choose on or off instead");
+                        }
+                        break;
+                    case "SuperChipMode":
+                        Console.WriteLine(">Told you not to bother!!!!");
+                        break;
+                    case "Quit":
+                        Environment.Exit(0);
+                        break;
                     default:
-                        Console.WriteLine("Unknown Command");
+                        Console.WriteLine(">Unknown Command");
                         break;
                 }
                 //Console.WriteLine(value);
             }
 
 
-            
             if (isRunning)
             {
-                SDLWindowDisplay s1 = new SDLWindowDisplay(c1);
+                SDLWindowDisplay s1 = new SDLWindowDisplay(c1, falloutModeFlag);
                 while (isRunning)
                 {
                     //    //Console.WriteLine($"{ c1.FullCycle():X4}");

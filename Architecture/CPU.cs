@@ -11,14 +11,34 @@ namespace Architecture
 {
     public partial class CPU
     {
-
-       
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
+        public int CPUClockRate { get; set; } = 600;
 
-        public  int CPU_CLOCK = 600;
+        //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
+        private byte[] V = new byte[16];
+        //16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
+        private ushort I;
+        /*Chip-8 also has two special purpose 8-bit registers, for the delay and sound timers. 
+          When these registers are non-zero, they are automatically decremented at a rate of 60Hz.*/
+        private byte DelayTimer;
+        private byte SoundTimer;
+        //The program counter(PC) is 16-bit, and is used to store the currently executing address
+        private ushort PC = 0x200;
 
+        //The stack pointer (SP) is 8-bit, it is used to point to the topmost level of the stack.
+        private byte SP;
+
+        private ushort[] Stack = new ushort[16];
+
+        private Random random = new Random();
+
+        public Display Display = new Display();
+
+        public Memory Memory = new Memory();
+
+        internal bool[] keyState = new bool[16];
 
         public CPU()
         {
@@ -39,7 +59,7 @@ namespace Architecture
                 {0xA000, LD_I },
                 {0xB000, JP_V0 },
                 {0xC000, RND_Vx },
-                {0xD000, (opcode) => { DRW_Vx_Vy(opcode); /*Display.DrawDisplay();*/ Display.UpdatePixelData(); } },
+                {0xD000, DRW_Vx_Vy},
                 {0xE000, KeyboardLookup },
                 {0xF000, LoadsOpcodeMapLookup },
             };
@@ -71,38 +91,11 @@ namespace Architecture
             };
 
         }
-            
-        //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
-        public byte[] V = new byte[16];
-
-        //16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
-        public ushort I;
-
-        /*Chip-8 also has two special purpose 8-bit registers, for the delay and sound timers. 
-          When these registers are non-zero, they are automatically decremented at a rate of 60Hz.*/
-        public byte DelayTimer;
-        public byte SoundTimer;
-
-        //The program counter(PC) is 16-bit, and is used to store the currently executing address
-        public ushort PC = 0x200;
-
-        //The stack pointer (SP) is 8-bit, it is used to point to the topmost level of the stack.
-        public byte SP;
-
-        public ushort[] Stack = new ushort[16];
-
-        public Display Display = new Display();
-
-        private Random random = new Random();
-
-        public Memory m1 = new Memory();
-
-        public bool[] keyState = new bool[16];
 
         private void Initialize()
         {
             Display.ClearDisplay();
-            m1 = new Memory();
+            Memory = new Memory();
             Stack = new ushort[16];
             V = new byte[16];
             DelayTimer = 0;
@@ -115,6 +108,11 @@ namespace Architecture
         private Stopwatch timersWatch = new Stopwatch();
         private Stopwatch cycleWatch = new Stopwatch();
 
+        /// <summary>
+        /// A full cycle of CPU including :
+        /// fetching, decoding and executing opcode 
+        /// and decrementing timers if necessery
+        /// </summary>
         public void FullCycle()
         {
             bool createdNew;
@@ -133,7 +131,7 @@ namespace Architecture
                 if (!cycleWatch.IsRunning)
                     cycleWatch.Start();
 
-                if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPU_CLOCK))
+                if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPUClockRate))
                 {
                     byte[] codedOpcode = FetchOpcode();
                     ushort decodedOpcode = DecodeOpcode(codedOpcode);
@@ -157,12 +155,8 @@ namespace Architecture
                 //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
             //}
 
-            //return decodedOpcode;
         }
-
-     
-        Action beep = ConsoleBeep;
-
+   
         private void DecrementeTimers()
         {
             if (SoundTimer == 1)
@@ -177,8 +171,8 @@ namespace Architecture
         {
             byte[] output = new byte[2];
 
-            output[0] = m1.MemoryMap[PC];
-            output[1] = m1.MemoryMap[PC + 1];
+            output[0] = Memory.MemoryMap[PC];
+            output[1] = Memory.MemoryMap[PC + 1];
 
             return output;
         }
@@ -231,6 +225,7 @@ namespace Architecture
                 throw new Exception($"Uknown Opcode {opcode.FullCode}");
         }
 
+        Action beep = ConsoleBeep;
         private static void ConsoleBeep()
         {
             Console.Beep(500, 500);

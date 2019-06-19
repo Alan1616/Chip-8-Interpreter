@@ -93,11 +93,11 @@ namespace Architecture
             ushort sum = (ushort)(V[opcode.X] + V[opcode.Y]);
             if (sum > 255)
             {
-                V[15] = 1;
+                V[0xF] = 1;
             }
             else
             {
-                V[15] = 0;
+                V[0xF] = 0;
             }
             V[opcode.X] = (byte)(sum & 0x00FF);
 
@@ -107,11 +107,11 @@ namespace Architecture
         {
             if (V[opcode.X] > V[opcode.Y])
             {
-                V[15] = 1;
+                V[0xF] = 1;
             }
             else
             {
-                V[15] = 0;
+                V[0xF] = 0;
             }
             V[opcode.X] = (byte)((V[opcode.X] - V[opcode.Y]) & 0x00FF);
 
@@ -121,11 +121,11 @@ namespace Architecture
         {
             if (V[opcode.X] % 2 == 1)
             {
-                V[15] = 1;
+                V[0xF] = 1;
             }
             else
             {
-                V[15] = 0;
+                V[0xF] = 0;
             }
             V[opcode.X] = (byte)(V[opcode.X] / 2);
         }//16
@@ -134,11 +134,11 @@ namespace Architecture
         {
             if (V[opcode.Y] > V[opcode.X])
             {
-                V[15] = 1;
+                V[0xF] = 1;
             }
             else
             {
-                V[15] = 0;
+                V[0xF] = 0;
             }
             V[opcode.X] = (byte)((V[opcode.Y] - V[opcode.X]) & 0x00FF);
         }//17
@@ -147,11 +147,11 @@ namespace Architecture
         {
             if ((byte)(V[opcode.X] & 0x80) == 0x80)
             {
-                V[15] = 1;
+                V[0xF] = 1;
             }
             else
             {
-                V[15] = 0;
+                V[0xF] = 0;
             }
             V[opcode.X] = (byte)(V[opcode.X] * 2);
         }//18
@@ -182,14 +182,14 @@ namespace Architecture
 
         private void DRW_Vx_Vy(Opcode opcode)
         {
-            V[15] = 0;
+            V[0xF] = 0;
             byte[] pixels = new byte[opcode.N];
             byte xCoordinate = V[opcode.X];
             byte yCoordinate = V[opcode.Y];
 
             for (int i = 0; i < opcode.N; i++)
             {
-                pixels[i] = m1.MemoryMap[I + i];
+                pixels[i] = Memory.MemoryMap[I + i];
             }
 
             for (int i = 0; i < pixels.Length; i++)
@@ -201,7 +201,7 @@ namespace Architecture
                         bool flag = Display.XORPixel((ushort)((xCoordinate + j + (yCoordinate + i) * 64)));
                         if (flag)
                         {
-                            V[15] = 1;
+                            V[0xF] = 1;
                         }
                     }
                 }
@@ -266,16 +266,16 @@ namespace Architecture
             byte tens = (byte)((V[opcode.X] % 100 - V[opcode.X] % 10) / 10);
             byte ones = (byte)(V[opcode.X] % 10);
 
-            m1.MemoryMap[I] = hundreds;
-            m1.MemoryMap[I + 1] = tens;
-            m1.MemoryMap[I + 2] = ones;
+            Memory.MemoryMap[I] = hundreds;
+            Memory.MemoryMap[I + 1] = tens;
+            Memory.MemoryMap[I + 2] = ones;
         }//32
 
         private void LD_I_Vx(Opcode opcode)
         {
             for (int i = 0; i <= opcode.X; i++)
             {
-                m1.MemoryMap[I + i] = V[i];
+                Memory.MemoryMap[I + i] = V[i];
             }
         }//33
 
@@ -283,7 +283,7 @@ namespace Architecture
         {
             for (int i = 0; i <= opcode.X; i++)
             {
-                V[i] = m1.MemoryMap[I + i];
+                V[i] = Memory.MemoryMap[I + i];
             }
         }//34 
 

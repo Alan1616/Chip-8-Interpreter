@@ -43,10 +43,7 @@ namespace Architecture
                 MemoryMap[0x200 + i] = oneByte;
                 i++;
             }
-            b1.Close();
-                
+            b1.Close();      
         }
-
-        
     }
 }
