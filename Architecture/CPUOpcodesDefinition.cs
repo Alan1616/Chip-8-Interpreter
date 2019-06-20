@@ -211,23 +211,19 @@ namespace Architecture
 
         private void SKP_Vx(Opcode opcode)
         {
-            //if (nextKeyPressed == V[opcode.X])
             if (keyState[V[opcode.X]] == true)
             {
                 PC = (ushort)(PC + 2);
             }
-            //throw new NotImplementedException();
-        }//24 not fully implemented
+        }//24 
 
         private void SKNP_Vx(Opcode opcode)
         {
-            //if (nextKeyPressed != V[opcode.X])
             if (keyState[V[opcode.X]]==false)
             {
                 PC = (ushort)(PC + 2);
             }           
-            // throw new NotImplementedException();
-        }//25 not fully implemented
+        }//25
 
         private void LD_Vx_DT(Opcode opcode)
         {
@@ -236,9 +232,21 @@ namespace Architecture
 
         private void LD_Vx_K(Opcode opcode)
         {
-            V[opcode.X] = Byte.Parse(Console.ReadLine());
+            AwaitsForKeypress = true;
+            WaitForKeypressEvent?.Invoke(this, AwaitsForKeypress);
+
+            for (byte i = 0; i < keyState.Length; i++)
+            {
+                if (keyState[i])
+                {
+                    V[opcode.X] = i;
+                    keyState[i] = false;
+                    break;
+                }
+            }
+
             //V[x] = 1;
-        } //27 simulates waiting for keypress - not fully implemented
+        } //27 
 
         private void LD_DT_Vx(Opcode opcode)
         {
@@ -286,11 +294,6 @@ namespace Architecture
                 V[i] = Memory.MemoryMap[I + i];
             }
         }//34 
-
-        private void SYS(Opcode opcode)
-        {
-            throw new NotImplementedException();
-        }//0
 
     }
 }

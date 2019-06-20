@@ -20,6 +20,14 @@ namespace Architecture
         private CPU usedCPU;
         private uint[] PixelsData = new uint[64 * 32];
         private readonly Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
+        public EventHandler<bool> TriesToQuitWhileWaitingEvent;
+
+        //public bool IsRunning { get; set; }
+
+        public SDLWindowDisplay()
+        {
+            //IsRunning = false;
+        }
 
         public SDLWindowDisplay(CPU cpu, bool modeFlag)
         {
@@ -29,6 +37,8 @@ namespace Architecture
             }
             usedCPU = cpu;
             FalloutModeRender = modeFlag;
+            usedCPU.WaitForKeypressEvent += usedCPU_WaitForKeypressEvent;
+            //IsRunning = true;
 
             window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             renderer = SDL.SDL_CreateRenderer(window, -1, 0);
@@ -57,7 +67,26 @@ namespace Architecture
             };
         }
 
-        public  void HandleEvents(ref bool isRunning )
+        //Welcome TO CALLBACK HELL!!!!
+        private void usedCPU_WaitForKeypressEvent(object sender, bool e)
+        {
+            while (usedCPU.AwaitsForKeypress)
+            {
+                SDL.SDL_Event ev;
+                SDL.SDL_PollEvent(out ev);
+                if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
+                {
+                    usedCPU.keyState[keyboardMap[ev.key.keysym.sym]] = true;
+                    usedCPU.AwaitsForKeypress = false;
+                }
+                if (ev.type == SDL.SDL_EventType.SDL_QUIT)
+                {
+                    usedCPU.AwaitsForKeypress = false;
+                    TriesToQuitWhileWaitingEvent?.Invoke(this, usedCPU.AwaitsForKeypress);
+                }
+            }
+        }
+        public  void HandleEvents(ref bool isRunning)
         {
             SDL.SDL_Event ev;
             SDL.SDL_PollEvent(out ev);
@@ -79,7 +108,6 @@ namespace Architecture
                     break;
             }
         }
-
         public void render()
         {
             UpdatePixelData();

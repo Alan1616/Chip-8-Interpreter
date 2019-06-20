@@ -13,13 +13,13 @@ namespace Chip_8_ConsoleDisplay
 {
     class Program
     {
+        static bool isRunning = false;
         static void Main(string[] args)
         {
-
             Console.WriteLine("Welcome to my Chip-8 Emulator! type in Help for comands!");
-            bool isRunning = false;
             bool falloutModeFlag = false;
             CPU c1 = new CPU();
+            
             while (isRunning == false)
             {
                 string line = "";
@@ -108,40 +108,32 @@ namespace Chip_8_ConsoleDisplay
                         Console.WriteLine(">Unknown Command");
                         break;
                 }
-                //Console.WriteLine(value);
             }
 
 
             if (isRunning)
             {
                 SDLWindowDisplay s1 = new SDLWindowDisplay(c1, falloutModeFlag);
+                s1.TriesToQuitWhileWaitingEvent += SDLWindowDisplay_TriesToQuitWhileWaitingEvent;
+
                 while (isRunning)
                 {
-                    //    //Console.WriteLine($"{ c1.FullCycle():X4}");
                     s1.HandleEvents(ref isRunning);
                     c1.FullCycle();
                     s1.render();
                     //Thread.Sleep(1);
-                    //    //Thread.Sleep(1);
-                    //    //Console.WriteLine($"V[6]={c1.V[6]}");
-                    //    //Console.WriteLine($"V[7]={c1.V[7]}");
                 }
                 s1.Quit();
             }
 
-
-            //do
-            //{
-            //    c1.FullCycle();
-            //} while (!signaled);
-
-           
-    
-
+       
             Console.ReadKey();
         }
 
-      
+        private static void SDLWindowDisplay_TriesToQuitWhileWaitingEvent(object sender, bool e)
+        {
+            isRunning = false;
+        }
 
         private static ushort ConvertUInt16ToBigEndian(ushort value)
         {
@@ -153,13 +145,3 @@ namespace Chip_8_ConsoleDisplay
 
     }
 }
-//BinaryReader b1 = new BinaryReader(File.Open("Chip8 Picture.ch8", FileMode.Open), System.Text.Encoding.BigEndianUnicode);
-//while (b1.BaseStream.Position < b1.BaseStream.Length)
-//{
-//    ushort opcode = ConvertUInt16ToBigEndian((b1.ReadUInt16()));
-//    Console.WriteLine($"{opcode:X4}");
-
-//    //c1.ExecuteOpcode(opcode);
-//}
-
-//b1.Close();

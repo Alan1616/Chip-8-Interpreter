@@ -14,6 +14,8 @@ namespace Architecture
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
+        public bool AwaitsForKeypress = false;
+        public EventHandler<bool> WaitForKeypressEvent;
         public int CPUClockRate { get; set; } = 600;
 
         //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
@@ -92,7 +94,7 @@ namespace Architecture
 
         }
 
-        private void Initialize()
+        public void Initialize()
         {
             Display.ClearDisplay();
             Memory = new Memory();
@@ -131,9 +133,9 @@ namespace Architecture
                 if (!cycleWatch.IsRunning)
                     cycleWatch.Start();
 
-                if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPUClockRate))
-                {
-                    byte[] codedOpcode = FetchOpcode();
+            if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPUClockRate))
+            {
+                byte[] codedOpcode = FetchOpcode();
                     ushort decodedOpcode = DecodeOpcode(codedOpcode);
                     Opcode opcode = new Opcode(decodedOpcode);
 
@@ -149,10 +151,10 @@ namespace Architecture
 
                     PC = (ushort)(PC + 2);
                     cycleWatch.Reset();
-                    //Thread.Sleep(1000);
-                } 
-                //else
-                //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
+                //Thread.Sleep(1000);
+            }
+            //else
+            //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
             //}
 
         }
