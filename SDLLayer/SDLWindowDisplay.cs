@@ -13,7 +13,7 @@ namespace SDLLayer
     public class SDLWindowDisplay
     {
         private const float FRAMES_PER_SECOND = 60F;
-        private const float FRAME_TIME = FRAMES_PER_SECOND / 1000F;
+        private const float FRAME_TIME = 1000F / FRAMES_PER_SECOND;
 
         //bool isRunning = false;
         private bool FalloutModeRender { get; set; }
