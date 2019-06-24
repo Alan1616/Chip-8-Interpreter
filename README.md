@@ -15,7 +15,11 @@ may run into troubles with running your program, so modify only first 80 lines
 of file. Each 5 lines stands for 1 character.  
 
 If you want to build it yourself you need to drop libraries content into your 
-bin/debug and bin/release files you also need Costura.Fody 3.3.3v nuget package.  
+bin/debug and bin/release files. 
+
+If you want to change SLD to another Library or something it should be easy
+as Architecture library contains only Chip-8 implementation, so you can write your
+own solution around it!
 
 Credit to r/EmuDev/ https://www.reddit.com/r/EmuDev/comments/c1arfm/chip8_emulator_ball_dosnt_move_in_pongpong2/  
 for help in finding 2 pesky hard to track bugs.  
