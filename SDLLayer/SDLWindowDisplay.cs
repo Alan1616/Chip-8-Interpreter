@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Architecture;
 using SDL2;
 
-namespace Architecture
+namespace SDLLayer
 {
     public class SDLWindowDisplay
     {
+        private const float FRAMES_PER_SECOND = 60F;
+        private const float FRAME_TIME = FRAMES_PER_SECOND / 1000F;
 
         //bool isRunning = false;
         private bool FalloutModeRender { get; set; }
@@ -21,13 +25,7 @@ namespace Architecture
         private uint[] PixelsData = new uint[64 * 32];
         private readonly Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
         public EventHandler<bool> TriesToQuitWhileWaitingEvent;
-
-        //public bool IsRunning { get; set; }
-
-        public SDLWindowDisplay()
-        {
-            //IsRunning = false;
-        }
+        private Stopwatch frameTimer = new Stopwatch();
 
         public SDLWindowDisplay(CPU cpu, bool modeFlag)
         {
@@ -38,7 +36,6 @@ namespace Architecture
             usedCPU = cpu;
             FalloutModeRender = modeFlag;
             usedCPU.WaitForKeypressEvent += usedCPU_WaitForKeypressEvent;
-            //IsRunning = true;
 
             window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             renderer = SDL.SDL_CreateRenderer(window, -1, 0);
@@ -110,19 +107,30 @@ namespace Architecture
         }
         public void render()
         {
-            UpdatePixelData();
-            GCHandle displayHande = GCHandle.Alloc(PixelsData, GCHandleType.Pinned);
+            if (!frameTimer.IsRunning)
+            {
+                frameTimer.Start();
+            }
 
-            if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
+            if (frameTimer.Elapsed.TotalMilliseconds >= FRAME_TIME)
+            {
+                UpdatePixelData();
+                GCHandle displayHande = GCHandle.Alloc(PixelsData, GCHandleType.Pinned);
 
-            sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-            sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
-            SDL.SDL_FreeSurface(sdlSurface);
-            displayHande.Free();
-            //add to render
-            SDL.SDL_RenderClear(renderer);
-            SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
-            SDL.SDL_RenderPresent(renderer);
+                if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
+
+                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+                sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
+                SDL.SDL_FreeSurface(sdlSurface);
+                displayHande.Free();
+                //add to render
+                SDL.SDL_RenderClear(renderer);
+                SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
+                SDL.SDL_RenderPresent(renderer);
+
+                frameTimer.Reset();
+            }
+     
         }
 
         public void UpdatePixelData()

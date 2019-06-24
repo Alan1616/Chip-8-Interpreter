@@ -9,7 +9,7 @@ namespace Architecture
     /// <summary>
     /// Opcode structure used
     /// to parse full data from 
-    /// certain opcod.
+    /// certain opcode.
     /// </summary>
     internal struct Opcode
     {

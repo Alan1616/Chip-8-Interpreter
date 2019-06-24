@@ -7,7 +7,9 @@ using System.IO;
 using Architecture;
 using System.Threading;
 using SDL2;
+using SDLLayer;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace Chip_8_ConsoleDisplay
 {
@@ -33,7 +35,7 @@ namespace Chip_8_ConsoleDisplay
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Welcome to my Chip-8 Emulator! type in Help for comands!");
+                Console.WriteLine("Welcome to my Chip-8 Emulator! type in Help for commands!");
                 c1.Initialize();
 
                 while (isRunning == false)
@@ -60,7 +62,8 @@ namespace Chip_8_ConsoleDisplay
                     }
                 }
 
-
+                //uint frameTime;
+                //uint frameStart;
                 if (isRunning)
                 {
                     SDLWindowDisplay s1 = new SDLWindowDisplay(c1, falloutModeFlag);
@@ -68,9 +71,16 @@ namespace Chip_8_ConsoleDisplay
 
                     while (isRunning)
                     {
-                        s1.HandleEvents(ref isRunning);
+                        //frameStart = SDL.SDL_GetTicks();
                         c1.FullCycle();
                         s1.render();
+                        s1.HandleEvents(ref isRunning);
+                        //frameTime = SDL.SDL_GetTicks() - frameStart;
+                        //if ((uint)(1000 / c1.CPUClockRate) > frameTime)
+                        //{
+                        //    SDL.SDL_Delay((uint)(1000 / c1.CPUClockRate) - frameTime);
+                        //}
+
                         //Thread.Sleep(1);
                     }
                     Console.WriteLine("Exiting Emulator Window");
@@ -135,7 +145,7 @@ namespace Chip_8_ConsoleDisplay
             int clock = 0;
             bool isGood = false;
             isGood = int.TryParse(value, out clock);
-            if (isGood && clock >= 200 && clock <= 20000)
+            if (isGood && clock >= 200 && clock <= 2000)
             {
                 c1.CPUClockRate = int.Parse(value);
                 Console.WriteLine($">Current cpu frequency = {c1.CPUClockRate} Hz");

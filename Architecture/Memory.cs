@@ -19,19 +19,32 @@ namespace Architecture
 
         private void LoadFont(int startLocation)
         {
-            string[] lines = File.ReadAllLines("BuildInFontFile.txt");
-            int stopLocation = lines.Length + 80;
-            if (stopLocation >= 512)
-                throw new OutOfMemoryException();
-            for (int i = 0; i < lines.Length; i++)
+            try
             {
-                MemoryMap[startLocation] = Convert.ToByte(lines[i], 16);
-                startLocation++;
+                string[] lines = File.ReadAllLines("BuildInFontFile.txt");
+                int stopLocation = lines.Length + 80;
+                if (stopLocation >= 512)
+                    throw new OutOfMemoryException();
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    MemoryMap[startLocation] = Convert.ToByte(lines[i], 16);
+                    startLocation++;
+                }
             }
+            catch (FileNotFoundException exception)
+            {
+                File.Create("BuildInFontFile.txt");
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
+       
         }
 
         public void LoadProgram(string location)
         {
+            ClearMemory();
             currentROMPath = location;
             BinaryReader b1 = new BinaryReader(File.Open(location, FileMode.Open), System.Text.Encoding.BigEndianUnicode);
             int i = 0;
@@ -44,6 +57,14 @@ namespace Architecture
                 i++;
             }
             b1.Close();      
+        }
+
+        private void ClearMemory()
+        {
+            for (int i = 80; i < MemoryMap.Length; i++)
+            {
+                MemoryMap[i] = 0;
+            }
         }
     }
 }

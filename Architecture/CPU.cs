@@ -11,21 +11,32 @@ namespace Architecture
 {
     public partial class CPU
     {
+        // Set of opcodes dictionaries pointing to
+        // certain opcode or a method that does 
+        // lookup and finds opcode.
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
+        // Should cpu stop exceution wait for keypress.
         public bool AwaitsForKeypress = false;
+        // Event that is invoked when chip-8 waits for keypress.
+        // Should be subscribed by your keyboard access class instance.
         public EventHandler<bool> WaitForKeypressEvent;
+
+        /// <summary>
+        /// Default clock rate Chip-8 runs at.
+        /// </summary>
         public int CPUClockRate { get; set; } = 600;
 
-        //General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
+        // General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
         private byte[] V = new byte[16];
-        //16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
+        // 16-bit register called I. This register is generally used to store memory addresses, so only the lowest (rightmost) 12 bits are usually used.
         private ushort I;
         /*Chip-8 also has two special purpose 8-bit registers, for the delay and sound timers. 
           When these registers are non-zero, they are automatically decremented at a rate of 60Hz.*/
         private byte DelayTimer;
         private byte SoundTimer;
+
         //The program counter(PC) is 16-bit, and is used to store the currently executing address
         private ushort PC = 0x200;
 
@@ -40,7 +51,7 @@ namespace Architecture
 
         public Memory Memory = new Memory();
 
-        internal bool[] keyState = new bool[16];
+        public bool[] keyState = new bool[16];
 
         public CPU()
         {
@@ -151,14 +162,12 @@ namespace Architecture
 
                     PC = (ushort)(PC + 2);
                     cycleWatch.Reset();
-                //Thread.Sleep(1000);
             }
             //else
             //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
             //}
 
-        }
-   
+        }   
         private void DecrementeTimers()
         {
             if (SoundTimer == 1)
@@ -185,7 +194,6 @@ namespace Architecture
 
             return output;
         }
-
         private void ArithmeticsOpcodeMapLookup(Opcode opcode)
         {
             if (ArithmeticsOpcodeMap.ContainsKey(opcode.N))
@@ -196,7 +204,6 @@ namespace Architecture
                 throw new Exception($"Uknown Opcode {opcode.FullCode}");
 
         }
-
         private void LoadsOpcodeMapLookup(Opcode opcode)
         {
             if (LoadsOpcodeMap.ContainsKey(opcode.KK))
@@ -232,7 +239,6 @@ namespace Architecture
         {
             Console.Beep(500, 500);
         }
-
 
     }
 }
