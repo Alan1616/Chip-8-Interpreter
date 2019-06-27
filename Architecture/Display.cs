@@ -35,7 +35,7 @@ namespace Architecture
             return flag;
         }
 
-        [Obsolete("Use SDL window instead!!!!")]
+        [Obsolete("Use SDL window instead!")]
         public void DrawDisplay()
         {
             Console.SetCursorPosition(0, 0);

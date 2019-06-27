@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Architecture
 {
-    public partial class CPU
+    public partial class CPU 
     {
         // Set of opcodes dictionaries pointing to
         // certain opcode or a method that does 
@@ -17,11 +17,11 @@ namespace Architecture
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
-        // Should cpu stop exceution wait for keypress.
+        // Should cpu stop exceution waiting for keypress.
         public bool AwaitsForKeypress = false;
         // Event that is invoked when chip-8 waits for keypress.
         // Should be subscribed by your keyboard access class instance.
-        public EventHandler<bool> WaitForKeypressEvent;
+        public event EventHandler<bool> WaitForKeypressEvent;
 
         /// <summary>
         /// Default clock rate Chip-8 runs at.
@@ -51,7 +51,8 @@ namespace Architecture
 
         public Memory Memory = new Memory();
 
-        public bool[] keyState = new bool[16];
+        // The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad
+        public bool[] KeyState = new bool[16];
 
         public CPU()
         {
@@ -128,12 +129,7 @@ namespace Architecture
         /// </summary>
         public void FullCycle()
         {
-            bool createdNew;
-            var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, "CF2D4313-33DE-489D-9721-6AFF69841DEA", out createdNew);
-            var signaled = false;
 
-            //while (!signaled)
-            //{
                 if (!timersWatch.IsRunning)
                     timersWatch.Start();
                 if (timersWatch.Elapsed.TotalMilliseconds > 16)
@@ -146,7 +142,7 @@ namespace Architecture
 
             if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPUClockRate))
             {
-                byte[] codedOpcode = FetchOpcode();
+                    byte[] codedOpcode = FetchOpcode();
                     ushort decodedOpcode = DecodeOpcode(codedOpcode);
                     Opcode opcode = new Opcode(decodedOpcode);
 
@@ -163,9 +159,6 @@ namespace Architecture
                     PC = (ushort)(PC + 2);
                     cycleWatch.Reset();
             }
-            //else
-            //    signaled = waitHandle.WaitOne(TimeSpan.FromMilliseconds((1000 / CPU_CLOCK)-cycleWatch.Elapsed.TotalMilliseconds));
-            //}
 
         }   
         private void DecrementeTimers()

@@ -62,8 +62,6 @@ namespace Chip_8_ConsoleDisplay
                     }
                 }
 
-                //uint frameTime;
-                //uint frameStart;
                 if (isRunning)
                 {
                     SDLWindowDisplay s1 = new SDLWindowDisplay(c1, falloutModeFlag);
@@ -71,19 +69,12 @@ namespace Chip_8_ConsoleDisplay
 
                     while (isRunning)
                     {
-                        //frameStart = SDL.SDL_GetTicks();
                         c1.FullCycle();
                         s1.render();
                         s1.HandleEvents(ref isRunning);
-                        //frameTime = SDL.SDL_GetTicks() - frameStart;
-                        //if ((uint)(1000 / c1.CPUClockRate) > frameTime)
-                        //{
-                        //    SDL.SDL_Delay((uint)(1000 / c1.CPUClockRate) - frameTime);
-                        //}
-
-                        //Thread.Sleep(1);
                     }
                     Console.WriteLine("Exiting Emulator Window");
+                    s1.TriesToQuitWhileWaitingEvent -= SDLWindowDisplay_TriesToQuitWhileWaitingEvent;
                     s1.Quit();
                 }
 
@@ -178,7 +169,6 @@ namespace Chip_8_ConsoleDisplay
         }
         private static void QuitCommand(CPU c1, string value)
         {
-            Console.WriteLine(">Told you not to bother!!!!");
             Environment.Exit(0);
         }
 

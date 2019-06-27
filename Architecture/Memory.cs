@@ -16,7 +16,6 @@ namespace Architecture
         {
             LoadFont(0x000);
         }
-
         private void LoadFont(int startLocation)
         {
             try
@@ -31,7 +30,7 @@ namespace Architecture
                     startLocation++;
                 }
             }
-            catch (FileNotFoundException exception)
+            catch (FileNotFoundException)
             {
                 File.Create("BuildInFontFile.txt");
             }
@@ -44,7 +43,7 @@ namespace Architecture
 
         public void LoadProgram(string location)
         {
-            ClearMemory();
+            ClearProgramMemory();
             currentROMPath = location;
             BinaryReader b1 = new BinaryReader(File.Open(location, FileMode.Open), System.Text.Encoding.BigEndianUnicode);
             int i = 0;
@@ -59,9 +58,9 @@ namespace Architecture
             b1.Close();      
         }
 
-        private void ClearMemory()
+        private void ClearProgramMemory()
         {
-            for (int i = 80; i < MemoryMap.Length; i++)
+            for (int i = 0x200; i < MemoryMap.Length; i++)
             {
                 MemoryMap[i] = 0;
             }

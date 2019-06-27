@@ -15,7 +15,6 @@ namespace SDLLayer
         private const float FRAMES_PER_SECOND = 60F;
         private const float FRAME_TIME = 1000F / FRAMES_PER_SECOND;
 
-        //bool isRunning = false;
         private bool FalloutModeRender { get; set; }
         private IntPtr window;
         private IntPtr renderer;
@@ -64,7 +63,6 @@ namespace SDLLayer
             };
         }
 
-        //Welcome TO CALLBACK HELL!!!!
         private void usedCPU_WaitForKeypressEvent(object sender, bool e)
         {
             while (usedCPU.AwaitsForKeypress)
@@ -73,7 +71,7 @@ namespace SDLLayer
                 SDL.SDL_PollEvent(out ev);
                 if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
                 {
-                    usedCPU.keyState[keyboardMap[ev.key.keysym.sym]] = true;
+                    usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
                     usedCPU.AwaitsForKeypress = false;
                 }
                 if (ev.type == SDL.SDL_EventType.SDL_QUIT)
@@ -81,6 +79,7 @@ namespace SDLLayer
                     usedCPU.AwaitsForKeypress = false;
                     TriesToQuitWhileWaitingEvent?.Invoke(this, usedCPU.AwaitsForKeypress);
                 }
+                render();
             }
         }
         public  void HandleEvents(ref bool isRunning)
@@ -94,12 +93,11 @@ namespace SDLLayer
                     break;
                 case SDL.SDL_EventType.SDL_KEYDOWN:
                     if (keyboardMap.ContainsKey(ev.key.keysym.sym))
-                        usedCPU.keyState[keyboardMap[ev.key.keysym.sym]] = true;
-                    //Console.WriteLine(ev.key.keysym.sym.ToString());
+                        usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
                     break;
                 case SDL.SDL_EventType.SDL_KEYUP:
                     if (keyboardMap.ContainsKey(ev.key.keysym.sym))
-                        usedCPU.keyState[keyboardMap[ev.key.keysym.sym]] = false;
+                        usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = false;
                     break;
                 default:
                     break;
@@ -129,9 +127,9 @@ namespace SDLLayer
                 SDL.SDL_RenderPresent(renderer);
 
                 frameTimer.Reset();
-            }
-     
         }
+
+    }
 
         public void UpdatePixelData()
         {
@@ -159,6 +157,7 @@ namespace SDLLayer
 
         public void Quit()
         {
+            usedCPU.WaitForKeypressEvent -= usedCPU_WaitForKeypressEvent;
             SDL.SDL_DestroyWindow(window);
             SDL.SDL_DestroyRenderer(renderer);
             SDL.SDL_Quit();

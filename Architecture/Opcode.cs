@@ -7,57 +7,28 @@ using System.Threading.Tasks;
 namespace Architecture
 {
     /// <summary>
-    /// Opcode structure used
-    /// to parse full data from 
-    /// certain opcode.
+    /// Opcode structure provides
+    /// easy access to required 
+    /// instruction data
     /// </summary>
     internal struct Opcode
     {
-        private ushort fullCode;
-        private ushort firstNibble;
-        private byte x;
-        private byte y;
-        private byte kk;
-        private byte n;
-        private ushort nnn;
-
-        public ushort FullCode
-        {
-            get { return fullCode; }
-        }
-        public ushort FirstNibble
-        {
-            get { return firstNibble; }
-        }
-        public byte X
-        {
-            get { return x; }
-        }
-        public byte Y
-        {
-            get { return y; }
-        }
-        public byte KK
-        {
-            get { return kk; }
-        }
-        public byte N
-        {
-            get { return n; }
-        }
-        public ushort NNN
-        {
-            get { return nnn; }
-        }
+        public ushort FullCode { get; }
+        public ushort FirstNibble { get; }
+        public byte X { get; }
+        public byte Y { get; }
+        public byte KK { get; }
+        public byte N { get; }
+        public ushort NNN { get; }
         public Opcode(ushort opcode)
         {
-            fullCode = opcode;
-            firstNibble = (ushort)(opcode & 0xF000);
-            x = (byte)((opcode & 0x0F00) >> 8);
-            y = (byte)((opcode & 0x00F0) >> 4);
-            kk = (byte)((opcode & 0x00FF));
-            n = (byte)((opcode & 0x000F));
-            nnn = (ushort)((opcode & 0x0FFF));
+            FullCode = opcode;
+            FirstNibble = (ushort)(opcode & 0xF000);
+            X = (byte)((opcode & 0x0F00) >> 8);
+            Y = (byte)((opcode & 0x00F0) >> 4);
+            KK = (byte)((opcode & 0x00FF));
+            N = (byte)((opcode & 0x000F));
+            NNN = (ushort)((opcode & 0x0FFF));
         }
 
     }
