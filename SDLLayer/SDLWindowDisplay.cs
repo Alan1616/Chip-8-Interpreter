@@ -127,7 +127,7 @@ namespace SDLLayer
                 SDL.SDL_RenderPresent(renderer);
 
                 frameTimer.Reset();
-        }
+            }
 
     }
 
