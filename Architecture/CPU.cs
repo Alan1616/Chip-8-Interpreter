@@ -132,7 +132,7 @@ namespace Architecture
 
                 if (!timersWatch.IsRunning)
                     timersWatch.Start();
-                if (timersWatch.Elapsed.TotalMilliseconds > 16.66)
+                if (timersWatch.Elapsed.TotalMilliseconds > 16)
                 {
                     DecrementeTimers();
                     timersWatch.Reset();
@@ -140,7 +140,7 @@ namespace Architecture
                 if (!cycleWatch.IsRunning)
                     cycleWatch.Start();
 
-            if (cycleWatch.Elapsed.TotalMilliseconds > ((1000D / CPUClockRate)))
+            if (cycleWatch.Elapsed.TotalMilliseconds > (1000 / CPUClockRate))
             {
                     byte[] codedOpcode = FetchOpcode();
                     ushort decodedOpcode = DecodeOpcode(codedOpcode);

@@ -34,9 +34,9 @@ namespace Architecture
             {
                 File.Create("BuildInFontFile.txt");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                throw;
+                throw exception;
             }
        
         }
@@ -55,7 +55,7 @@ namespace Architecture
                 MemoryMap[0x200 + i] = oneByte;
                 i++;
             }
-            b1.Close();
+            b1.Close();      
         }
 
         private void ClearProgramMemory()
