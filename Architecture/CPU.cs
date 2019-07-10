@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Architecture
 {
-    public partial class CPU 
+    public partial class CPU : IDircectKeyboardAccess
     {
         // Set of opcodes dictionaries pointing to
         // certain opcode or a method that does 
@@ -18,7 +18,7 @@ namespace Architecture
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
         // Should cpu stop exceution waiting for keypress.
-        public bool AwaitsForKeypress = false;
+        public bool AwaitsForKeypress { get; set; } = false;
         // Event that is invoked when chip-8 waits for keypress.
         // Should be subscribed by your keyboard access class instance.
         public event EventHandler<bool> WaitForKeypressEvent;
@@ -37,6 +37,9 @@ namespace Architecture
         private byte DelayTimer;
         private byte SoundTimer;
 
+        private Stopwatch timersWatch = new Stopwatch();
+        private Stopwatch cycleWatch = new Stopwatch();
+
         //The program counter(PC) is 16-bit, and is used to store the currently executing address
         private ushort PC = 0x200;
 
@@ -52,7 +55,7 @@ namespace Architecture
         public Memory Memory = new Memory();
 
         // The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad
-        public bool[] KeyState = new bool[16];
+        public bool[] KeyState { get; set; } = new bool[16] ;
 
         public CPU()
         {
@@ -119,8 +122,7 @@ namespace Architecture
             I = 0;
         }
  
-        private Stopwatch timersWatch = new Stopwatch();
-        private Stopwatch cycleWatch = new Stopwatch();
+   
 
         /// <summary>
         /// A full cycle of CPU including :
@@ -145,7 +147,6 @@ namespace Architecture
                     byte[] codedOpcode = FetchOpcode();
                     ushort decodedOpcode = DecodeOpcode(codedOpcode);
                     Opcode opcode = new Opcode(decodedOpcode);
-
 
                     if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
                     {

@@ -18,30 +18,29 @@ namespace SDLLayer
         private bool FalloutModeRender { get; set; }
         private IntPtr window;
         private IntPtr renderer;
-        private IntPtr sdlSurface;
-        private IntPtr sdlTexture;
-        private CPU usedCPU;
+        private readonly IDircectKeyboardAccess keyboardAccess;
+        private readonly IDirectDisplayAccess displayAccess;
         private uint[] PixelsData = new uint[64 * 32];
         private readonly Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
-        public EventHandler<bool> TriesToQuitWhileWaitingEvent;
+        public event EventHandler<bool> TriesToQuitWhileWaitingEvent;
         private Stopwatch frameTimer = new Stopwatch();
 
-        public SDLWindowDisplay(CPU cpu, bool modeFlag)
+        public SDLWindowDisplay(IDircectKeyboardAccess keyboardSource,IDirectDisplayAccess displaySource, bool modeFlag)
         {
             if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
             {
                 Console.WriteLine("SDL failed to init.");
             }
-            usedCPU = cpu;
+            keyboardAccess = keyboardSource;
+            displayAccess = displaySource;
+
             FalloutModeRender = modeFlag;
-            usedCPU.WaitForKeypressEvent += usedCPU_WaitForKeypressEvent;
+            keyboardAccess.WaitForKeypressEvent += keyboardAccess_WaitForKeypressEvent;
 
             window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             renderer = SDL.SDL_CreateRenderer(window, -1, 0);
             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
-            sdlSurface = IntPtr.Zero;
-            sdlTexture = IntPtr.Zero;
             keyboardMap = new Dictionary<SDL.SDL_Keycode, byte>
             {
                 { SDL.SDL_Keycode.SDLK_x,0 },
@@ -63,21 +62,21 @@ namespace SDLLayer
             };
         }
 
-        private void usedCPU_WaitForKeypressEvent(object sender, bool e)
+        private void keyboardAccess_WaitForKeypressEvent(object sender, bool e)
         {
-            while (usedCPU.AwaitsForKeypress)
+            while (keyboardAccess.AwaitsForKeypress)
             {
                 SDL.SDL_Event ev;
                 SDL.SDL_PollEvent(out ev);
                 if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
                 {
-                    usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
-                    usedCPU.AwaitsForKeypress = false;
+                    keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
+                    keyboardAccess.AwaitsForKeypress = false;
                 }
                 if (ev.type == SDL.SDL_EventType.SDL_QUIT)
                 {
-                    usedCPU.AwaitsForKeypress = false;
-                    TriesToQuitWhileWaitingEvent?.Invoke(this, usedCPU.AwaitsForKeypress);
+                    keyboardAccess.AwaitsForKeypress = false;
+                    TriesToQuitWhileWaitingEvent?.Invoke(this, keyboardAccess.AwaitsForKeypress);
                 }
                 render();
             }
@@ -93,11 +92,11 @@ namespace SDLLayer
                     break;
                 case SDL.SDL_EventType.SDL_KEYDOWN:
                     if (keyboardMap.ContainsKey(ev.key.keysym.sym))
-                        usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
+                        keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
                     break;
                 case SDL.SDL_EventType.SDL_KEYUP:
                     if (keyboardMap.ContainsKey(ev.key.keysym.sym))
-                        usedCPU.KeyState[keyboardMap[ev.key.keysym.sym]] = false;
+                        keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = false;
                     break;
                 default:
                     break;
@@ -113,31 +112,39 @@ namespace SDLLayer
             if (frameTimer.Elapsed.TotalMilliseconds >= FRAME_TIME)
             {
                 UpdatePixelData();
-                GCHandle displayHande = GCHandle.Alloc(PixelsData, GCHandleType.Pinned);
-
-                if (sdlTexture != IntPtr.Zero) SDL.SDL_DestroyTexture(sdlTexture);
-
-                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-                sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
-                SDL.SDL_FreeSurface(sdlSurface);
-                displayHande.Free();
-                //add to render
-                SDL.SDL_RenderClear(renderer);
-                SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
-                SDL.SDL_RenderPresent(renderer);
+                RenderSingleFrame();
 
                 frameTimer.Reset();
-        }
+            }
 
     }
 
-        public void UpdatePixelData()
+        private void RenderSingleFrame()
+        {
+            //setup 
+            GCHandle displayHande = GCHandle.Alloc(PixelsData, GCHandleType.Pinned);
+
+            IntPtr sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHande.AddrOfPinnedObject(), 64, 32, 32, 256, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+            IntPtr sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
+        
+            //add to render
+            SDL.SDL_RenderClear(renderer);
+            SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
+            SDL.SDL_RenderPresent(renderer);
+
+            //free memory
+            SDL.SDL_DestroyTexture(sdlTexture);
+            SDL.SDL_FreeSurface(sdlSurface);
+            displayHande.Free();
+        }
+
+        private void UpdatePixelData()
         {
             for (int i = 0; i < 32; i++)
             {
                 for (int j = 0; j < 64; j++)
                 {
-                    if (usedCPU.Display.PixelsState[j + i * 64])
+                    if (displayAccess.PixelsState[j + i * 64])
                     {
                         if(FalloutModeRender)
                             PixelsData[j + i * 64] = 0x003300FF;
@@ -157,7 +164,7 @@ namespace SDLLayer
 
         public void Quit()
         {
-            usedCPU.WaitForKeypressEvent -= usedCPU_WaitForKeypressEvent;
+            keyboardAccess.WaitForKeypressEvent -= keyboardAccess_WaitForKeypressEvent;
             SDL.SDL_DestroyWindow(window);
             SDL.SDL_DestroyRenderer(renderer);
             SDL.SDL_Quit();

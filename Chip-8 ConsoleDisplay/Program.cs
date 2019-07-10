@@ -10,6 +10,7 @@ using SDL2;
 using SDLLayer;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Chip_8_ConsoleDisplay.ConsoleUI;
 
 namespace Chip_8_ConsoleDisplay
 {
@@ -64,7 +65,7 @@ namespace Chip_8_ConsoleDisplay
 
                 if (isRunning)
                 {
-                    SDLWindowDisplay s1 = new SDLWindowDisplay(c1, falloutModeFlag);
+                    SDLWindowDisplay s1 = new SDLWindowDisplay(c1,c1.Display, falloutModeFlag);
                     s1.TriesToQuitWhileWaitingEvent += SDLWindowDisplay_TriesToQuitWhileWaitingEvent;
 
                     while (isRunning)
@@ -86,14 +87,6 @@ namespace Chip_8_ConsoleDisplay
         private static void SDLWindowDisplay_TriesToQuitWhileWaitingEvent(object sender, bool e)
         {
             isRunning = false;
-        }
-
-        private static ushort ConvertUInt16ToBigEndian(ushort value)
-        {
-            byte[] temp = BitConverter.GetBytes(value);
-            Array.Reverse(temp);
-            value = BitConverter.ToUInt16(temp, 0);
-            return value;
         }
 
         private static void DisplayHelpCommand(CPU c1, string value)

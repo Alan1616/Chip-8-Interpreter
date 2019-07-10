@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Architecture
 {
     /// <summary>
-    /// Opcode structure provides
+    /// Opcode class provides
     /// easy access to required 
     /// instruction data
     /// </summary>
-    internal struct Opcode
+    internal class Opcode
     {
         public ushort FullCode { get; }
         public ushort FirstNibble { get; }

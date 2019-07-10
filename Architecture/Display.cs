@@ -7,9 +7,9 @@ using System.Threading;
 
 namespace Architecture
 {
-    public class Display
+    public class Display : IDirectDisplayAccess
     {
-        public bool[] PixelsState = new bool[64 * 32];
+        public bool[] PixelsState { get; } = new bool[64 * 32];
 
         public void ClearDisplay()
         {
@@ -35,7 +35,7 @@ namespace Architecture
             return flag;
         }
 
-        [Obsolete("Use SDL window instead!")]
+        [Obsolete("Use graphic Library window instead!")]
         public void DrawDisplay()
         {
             Console.SetCursorPosition(0, 0);

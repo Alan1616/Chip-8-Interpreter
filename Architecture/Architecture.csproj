@@ -46,6 +46,8 @@
     <Compile Include="CPU.cs" />
     <Compile Include="CPUOpcodesDefinition.cs" />
     <Compile Include="Display.cs" />
+    <Compile Include="IDircectKeyboardAccess.cs" />
+    <Compile Include="IDirectDisplayAccess.cs" />
     <Compile Include="Memory.cs" />
     <Compile Include="Opcode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

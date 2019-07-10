@@ -10,35 +10,73 @@ namespace Architecture
     public class Memory
     {
         public byte[] MemoryMap = new byte[4096];
-        public string currentROMPath;
+        public string currentROMPath { get; set; }
 
         public Memory()
         {
-            LoadFont(0x000);
+            SetUpFont(0x000);
         }
-        private void LoadFont(int startLocation)
+        private void SetUpFont(int startLocation)
         {
             try
             {
-                string[] lines = File.ReadAllLines("BuildInFontFile.txt");
-                int stopLocation = lines.Length + 80;
-                if (stopLocation >= 512)
-                    throw new OutOfMemoryException();
-                for (int i = 0; i < lines.Length; i++)
+                if (!File.Exists("BuildInFontFile.txt"))
                 {
-                    MemoryMap[startLocation] = Convert.ToByte(lines[i], 16);
-                    startLocation++;
+                    CreateDefaultFontFile();
                 }
-            }
-            catch (FileNotFoundException)
-            {
-                File.Create("BuildInFontFile.txt");
+                string[] fonts = LoadFontFile();
+                LoadFont(startLocation,fonts);
             }
             catch (Exception)
             {
+                //TODO log it somwhere.
                 throw;
             }
        
+        }
+
+        private string[] LoadFontFile()
+        {
+            string[] lines = File.ReadAllLines("BuildInFontFile.txt");
+            return lines;
+        }
+
+        private void LoadFont(int startLocation, string[] fontFile)
+        {
+            int stopLocation = fontFile.Length + 80;
+            if (stopLocation >= 512)
+                throw new OutOfMemoryException();
+            for (int i = 0; i < fontFile.Length; i++)
+            {
+                MemoryMap[startLocation] = Convert.ToByte(fontFile[i], 16);
+                startLocation++;
+            }
+        }
+
+        private void CreateDefaultFontFile()
+        {
+            string[] defaultFont = new string[]
+            {
+            "0xF0", "0x90", "0x90", "0x90", "0xF0", "0x20", "0x60", "0x20",
+            "0x20", "0x70", "0xF0", "0x10", "0xF0", "0x80", "0xF0", "0xF0",
+            "0x10", "0xF0", "0x10", "0xF0", "0x90", "0x90", "0xF0", "0x10",
+            "0x10", "0xF0", "0x80", "0xF0", "0x10", "0xF0", "0xF0", "0x80",
+            "0xF0", "0x90", "0xF0", "0xF0", "0x10", "0x20", "0x40", "0x40",
+            "0xF0", "0x90", "0xF0", "0x90", "0xF0", "0xF0", "0x90", "0xF0",
+            "0x10", "0xF0", "0xF0", "0x90", "0xF0", "0x90", "0x90", "0xE0",
+            "0x90", "0xE0", "0x90", "0xE0", "0xF0", "0x80", "0x80", "0x80",
+            "0xF0", "0xE0", "0x90", "0x90", "0x90", "0xE0", "0xF0", "0x80",
+            "0xF0", "0x80", "0xF0", "0xF0", "0x80", "0xF0", "0x80", "0x80"
+            };
+
+            using (StreamWriter s = new StreamWriter("BuildInFontFile.txt"))
+            {
+                foreach (string singleLine in defaultFont)
+                {
+                    s.Write(singleLine.ToString() + Environment.NewLine);
+                }
+            }
+            
         }
 
         public void LoadProgram(string location)
