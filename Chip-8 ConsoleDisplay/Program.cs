@@ -24,13 +24,13 @@ namespace Chip_8_ConsoleDisplay
             Dictionary <string, Action<CPU,string>> ConsoleCommandsMap;
             ConsoleCommandsMap = new Dictionary<string, Action<CPU,string>>
             {
-                {"Help",DisplayHelpCommand },
-                {"Run",StartEmulatorCommand },
-                {"LoadRom",LoadRomCommand },
-                {"SetClockRate",SetClockRateCommand },
-                {"FalloutMode", SetFalloutModeCommand },
-                {"SuperChipMode",SuperChipModeCommand },
-                {"Quit",QuitCommand },
+                {"help",DisplayHelpCommand },
+                {"run",StartEmulatorCommand },
+                {"loadrom",LoadRomCommand },
+                {"setclockrate",SetClockRateCommand },
+                {"falloutmode", SetFalloutModeCommand },
+                {"superchipmode",SuperChipModeCommand },
+                {"quit",QuitCommand },
             };
 
             while (true)
@@ -43,7 +43,7 @@ namespace Chip_8_ConsoleDisplay
                 {
                     string line = "";
                     Console.Write(">");
-                    line = Console.ReadLine();
+                    line = Console.ReadLine().ToLower();
                     string command;
                     string value = "0";
                     if (line.Contains(" "))
