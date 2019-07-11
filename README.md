@@ -7,12 +7,12 @@ Then you can specify your Clock rate by E.g SetClockRate 1000.
 NOTE that default clock rate is 600 which is probably good for  
 70% of c8 ROMs you can find. Then you can specify your color scheme. Only 2 schemes available atm.  
 Do it by FalloutMode [on/off] off is default - black and white. On mode is grey and green.  
-Don't delete BuiltInFontFile.txt or you will have no built in font (o rly?). This file  
-is for users that know about chip-8 font and want to modify it for their liking.  
-NOTE: if you add more font beyond 80 lines it won't matter anyway cause  
+BuiltInFontFile.txt file is for users that know about chip-8 font and want to modify it 
+to their liking. If you messed up just delete it and it will be generated again!  
+NOTE: if you add more font beyond 80 lines it won't matter anyway cause    
 no program uses more than 16 characters and if you get past 511 lines you  
-may run into troubles with running your program, so modify only first 80 lines  
-of file. Each 5 lines stands for 1 character.  
+will crash, so modify only first 80 lines of file. Each 5 lines stands for 1 character.   
+
 
 If you want to build it yourself you need to drop libraries content into your 
 bin/debug and bin/release files. 
@@ -25,6 +25,6 @@ Credit to r/EmuDev/ https://www.reddit.com/r/EmuDev/comments/c1arfm/chip8_emulat
 for help in finding 2 pesky hard to track bugs.  
 
 
-Maybe i will add super chip support in the future :).  
+Maybe i will add SCHP-48/MegaChip support in the future (if i find good reference).  
 For now enjoy photorealistic Chip-8 games!  
 
