@@ -10,7 +10,7 @@ using SDL2;
 
 namespace SDLLayer
 {
-    public class SDLWindowDisplay
+    public class SDLWindowDisplay : IEngine
     {
         private const float FRAMES_PER_SECOND = 60F;
         private const float FRAME_TIME = 1000F / FRAMES_PER_SECOND;
@@ -27,19 +27,16 @@ namespace SDLLayer
 
         public SDLWindowDisplay(IDircectKeyboardAccess keyboardSource,IDirectDisplayAccess displaySource, bool modeFlag)
         {
-            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
-            {
-                Console.WriteLine("SDL failed to init.");
-            }
+    
             keyboardAccess = keyboardSource;
             displayAccess = displaySource;
 
             FalloutModeRender = modeFlag;
             keyboardAccess.WaitForKeypressEvent += keyboardAccess_WaitForKeypressEvent;
 
-            window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-            renderer = SDL.SDL_CreateRenderer(window, -1, 0);
-            SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+            //window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            //renderer = SDL.SDL_CreateRenderer(window, -1, 0);
+            //SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
             keyboardMap = new Dictionary<SDL.SDL_Keycode, byte>
             {
@@ -62,6 +59,17 @@ namespace SDLLayer
             };
         }
 
+        public void OpenWindow()
+        {
+            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
+            {
+                Console.WriteLine("SDL failed to init.");
+            }
+            window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            renderer = SDL.SDL_CreateRenderer(window, -1, 0);
+            SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        }
+
         private void keyboardAccess_WaitForKeypressEvent(object sender, bool e)
         {
             while (keyboardAccess.AwaitsForKeypress)
@@ -78,7 +86,7 @@ namespace SDLLayer
                     keyboardAccess.AwaitsForKeypress = false;
                     TriesToQuitWhileWaitingEvent?.Invoke(this, keyboardAccess.AwaitsForKeypress);
                 }
-                render();
+                Render();
             }
         }
         public  void HandleEvents(ref bool isRunning)
@@ -102,7 +110,7 @@ namespace SDLLayer
                     break;
             }
         }
-        public void render()
+        public void Render()
         {
             if (!frameTimer.IsRunning)
             {

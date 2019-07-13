@@ -53,9 +53,15 @@ namespace Architecture
         public Display Display = new Display();
 
         public Memory Memory = new Memory();
+         
 
         // The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad
         public bool[] KeyState { get; set; } = new bool[16] ;
+
+        private bool DisplayGet(int i)
+        {
+            return Display.PixelsState[i];
+        }
 
         public CPU()
         {
@@ -109,7 +115,7 @@ namespace Architecture
 
         }
 
-        public void Initialize()
+        public void Reset()
         {
             Display.ClearDisplay();
             Memory = new Memory();
@@ -164,6 +170,7 @@ namespace Architecture
         }   
         private void DecrementeTimers()
         {
+            //TODO Real Sound Source!
             if (SoundTimer == 1)
             beep.BeginInvoke((a) => { beep.EndInvoke(a); }, null);
             if (SoundTimer > 0)
