@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chip_8_ConsoleDisplay
+namespace SDLLayer
 {
     public enum DisplayMode
     {
         DefaultMode,
-        FalloutMode
+        FalloutMode,
+        BlueMode,
+        RedMode,
     }
 }

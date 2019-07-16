@@ -54,7 +54,6 @@
   <ItemGroup>
     <Compile Include="ConsoleUI\ConsoleCommandsProcessor.cs" />
     <Compile Include="ConsoleUI\InterpreterInstance.cs" />
-    <Compile Include="enums.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

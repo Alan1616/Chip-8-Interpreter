@@ -43,7 +43,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="enums.cs" />
     <Compile Include="IEngine.cs" />
+    <Compile Include="PixleParsers\BluePixleParser.cs" />
+    <Compile Include="PixleParsers\DefualtPixleParser.cs" />
+    <Compile Include="PixleParsers\FalloutPixleParser.cs" />
+    <Compile Include="PixleParsers\IPixleParser.cs" />
+    <Compile Include="PixleParsers\ParserFactory.cs" />
+    <Compile Include="PixleParsers\RedPixleParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SDLWindowDisplay.cs" />
   </ItemGroup>
@@ -53,5 +60,6 @@
       <Name>Architecture</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

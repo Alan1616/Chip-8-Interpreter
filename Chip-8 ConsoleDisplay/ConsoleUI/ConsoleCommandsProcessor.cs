@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Architecture;
+using SDLLayer;
 
 namespace Chip_8_ConsoleDisplay.ConsoleUI
 {
@@ -16,9 +17,18 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             {"run",StartEmulatorCommand },
             {"loadrom",LoadRomCommand },
             {"setclockrate",SetClockRateCommand },
-            {"falloutmode", SetFalloutModeCommand },
+            {"displaymode", SetDisplayModeCommand },
             {"superchipmode",SuperChipModeCommand },
             {"quit",QuitCommand },
+        };
+
+
+        static readonly Dictionary<string, DisplayMode> DisplayModesMap = new Dictionary<string, DisplayMode>
+        {
+            {"fallout", DisplayMode.FalloutMode },
+            {"default", DisplayMode.DefaultMode},
+            {"blue", DisplayMode.BlueMode },
+            { "red", DisplayMode.RedMode},
         };
 
 
@@ -50,7 +60,8 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
 
             if (ConsoleCommandsMap.ContainsKey(consoleCommand))
             {
-                ConsoleCommandsMap[consoleCommand](interpreter, value); 
+                ConsoleCommandsMap[consoleCommand](interpreter, value);
+                Console.WriteLine($"Display Mode : {value}");
             }
             else
             {
@@ -101,17 +112,13 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             }
         }
 
-        private static void SetFalloutModeCommand(InterpreterInstance interpreter, string value)
+        private static void SetDisplayModeCommand(InterpreterInstance interpreter, string value)
         {
-            if (value == "on")
+            value = value.ToLower();
+
+            if (DisplayModesMap.ContainsKey(value))
             {
-                interpreter.DisplayScheme = DisplayMode.FalloutMode;
-                Console.WriteLine(">Display Mode : Fallout Mode");
-            }
-            else if (value == "off")
-            {
-                interpreter.DisplayScheme = DisplayMode.DefaultMode;
-                Console.WriteLine(">Display Mode : Default Mode");
+                interpreter.DisplayScheme = DisplayModesMap[value];
             }
             else
             {
@@ -125,7 +132,7 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             Console.WriteLine("->Run - to run a program from specified ROM source");
             Console.WriteLine("->LoadRom \"roamtoload\" - specify ROM source");
             Console.WriteLine("->SetClockRate [target frequency in Hz] for example SetCPUFreq 500 sets CPU frequency to 500 HZ (range 200-2000), defualt is 600 ");
-            Console.WriteLine("->FalloutMode [on/off] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
+            Console.WriteLine("->DisplayMode [default|fallout|blue|red] - Fallout mode on turns colors to green and gray while off is true to orginal Chip-8 mono, defualt is off");
             Console.WriteLine("->Quit - Bye!!");
             Console.WriteLine("->SuperChipMode [on/off] - Allows to run SuperChip-8 programs - not implemented yet so don't bother");
         }

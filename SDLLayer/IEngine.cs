@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace SDLLayer
 {
     public interface IEngine
@@ -10,5 +9,6 @@ namespace SDLLayer
         void HandleEvents(ref bool isRunning);
         void Quit();
         void Render();
+        void SetColorScheme(DisplayMode DisplayScheme);
     }
 }

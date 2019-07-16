@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Architecture;
 using SDLLayer;
@@ -30,14 +31,17 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             Engine = engine;
         }
 
-        public void HandleCommands(string consoleCommand)
-        {
-
-        }
-
         public void Run()
         {
+            this.GreetTheUser();
+
+            while (!isRunning)
+            {
+                this.ProcessCommands();
+            }
+
             SetUp();
+
             while (IsRunning)
             {
                 EmulationCycle();
@@ -51,6 +55,7 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
         {
             Engine.OpenWindow();
             Engine.TriesToQuitWhileWaitingEvent += Engine_TriesToQuitWhileWaitingEvent;
+            Engine.SetColorScheme(DisplayScheme);
         }
 
         private void Engine_TriesToQuitWhileWaitingEvent(object sender, bool e)

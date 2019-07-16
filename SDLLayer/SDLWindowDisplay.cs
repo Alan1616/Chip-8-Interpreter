@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Architecture;
 using SDL2;
+using SDLLayer.PixleParsers;
 
 namespace SDLLayer
 {
@@ -15,7 +16,6 @@ namespace SDLLayer
         private const float FRAMES_PER_SECOND = 60F;
         private const float FRAME_TIME = 1000F / FRAMES_PER_SECOND;
 
-        private bool FalloutModeRender { get; set; }
         private IntPtr window;
         private IntPtr renderer;
         private readonly IDircectKeyboardAccess keyboardAccess;
@@ -24,6 +24,7 @@ namespace SDLLayer
         private readonly Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
         public event EventHandler<bool> TriesToQuitWhileWaitingEvent;
         private Stopwatch frameTimer = new Stopwatch();
+        private IPixleParser pixleParser;
 
         public SDLWindowDisplay(IDircectKeyboardAccess keyboardSource,IDirectDisplayAccess displaySource, bool modeFlag)
         {
@@ -31,7 +32,6 @@ namespace SDLLayer
             keyboardAccess = keyboardSource;
             displayAccess = displaySource;
 
-            FalloutModeRender = modeFlag;
             keyboardAccess.WaitForKeypressEvent += keyboardAccess_WaitForKeypressEvent;
 
             //window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
@@ -152,20 +152,7 @@ namespace SDLLayer
             {
                 for (int j = 0; j < 64; j++)
                 {
-                    if (displayAccess.PixelsState[j + i * 64])
-                    {
-                        if(FalloutModeRender)
-                            PixelsData[j + i * 64] = 0x003300FF;
-                        else
-                            PixelsData[j + i * 64] = 0xFFFFFFFF;
-                    }
-                    else
-                    {
-                        if (FalloutModeRender)
-                            PixelsData[j + i * 64] = 0x9CA89CFF;
-                        else
-                            PixelsData[j + i * 64] = 0x00000000;    
-                    }
+                    PixelsData[j + i * 64] = pixleParser.ParsePixels(displayAccess.PixelsState[j + i *64]);
                 }
             }
         }
@@ -176,6 +163,11 @@ namespace SDLLayer
             SDL.SDL_DestroyWindow(window);
             SDL.SDL_DestroyRenderer(renderer);
             SDL.SDL_Quit();
+        }
+
+        public void SetColorScheme(DisplayMode DisplayScheme)
+        {
+            pixleParser = ParserFactory.GetPixleParser(DisplayScheme);
         }
     }
 }

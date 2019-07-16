@@ -25,16 +25,8 @@ namespace Chip_8_ConsoleDisplay
             InterpreterInstance interpreter = new InterpreterInstance(cpu, sdl);
 
             while (true)
-            {
-                interpreter.GreetTheUser();
-
-                while (!interpreter.IsRunning)
-                {
-                    interpreter.ProcessCommands();
-                }
-             
+            {     
                 interpreter.Run();
-
             }
 
         }
