@@ -5,7 +5,7 @@ Load your ROM file by command LoadRom "filename" - note that i check only
 if file exist, so try to load only c8 programs otherwise you will crash.  
 Then you can specify your Clock rate E.g SetClockRate 1000.  
 NOTE that default clock rate is 600 which is probably good for  
-80% of c8 ROMs you can find. Then you can specify your color scheme.
+80% of c8 ROMs you can find. Then you can specify your color scheme.  
 Do it by DisplayMode [default|fallout|blue|red] default is standard black and white.  
 BuiltInFontFile.txt file is for users who know about chip-8 font and want to modify it   
 to their liking. If you mess up just delete the file and it will be generated again.  
