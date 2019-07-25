@@ -24,6 +24,7 @@ namespace Architecture
                 {
                     CreateDefaultFontFile();
                 }
+
                 string[] fonts = LoadFontFile();
                 LoadFont(startLocation,fonts);
             }
@@ -48,8 +49,7 @@ namespace Architecture
                 throw new OutOfMemoryException();
             for (int i = 0; i < fontFile.Length; i++)
             {
-                MemoryMap[startLocation] = Convert.ToByte(fontFile[i], 16);
-                startLocation++;
+                MemoryMap[i + startLocation] = Convert.ToByte(fontFile[i], 16);
             }
         }
 

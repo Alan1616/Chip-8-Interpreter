@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chip-8 ConsoleDisplay", "Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Architecture", "Architecture\Architecture.csproj", "{1DE51DD8-EAA4-45DE-B385-0A6BDF64DE41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDLLayer", "SDLLayer\SDLLayer.csproj", "{41E8F888-B819-43D7-829B-4A03B3AFA4DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayLibrary", "SDLLayer\DisplayLibrary.csproj", "{41E8F888-B819-43D7-829B-4A03B3AFA4DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

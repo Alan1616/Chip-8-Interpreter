@@ -53,9 +53,15 @@ namespace Architecture
         public Display Display = new Display();
 
         public Memory Memory = new Memory();
+         
 
         // The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad
         public bool[] KeyState { get; set; } = new bool[16] ;
+
+        private bool DisplayGet(int i)
+        {
+            return Display.PixelsState[i];
+        }
 
         public CPU()
         {
@@ -109,7 +115,7 @@ namespace Architecture
 
         }
 
-        public void Initialize()
+        public void Reset()
         {
             Display.ClearDisplay();
             Memory = new Memory();
@@ -121,48 +127,41 @@ namespace Architecture
             SP = 0;
             I = 0;
         }
- 
-   
+
+
 
         /// <summary>
         /// A full cycle of CPU including :
-        /// fetching, decoding and executing opcode 
-        /// and decrementing timers if necessery
+        /// fetching, decoding and executing opcode. 
         /// </summary>
+        /// 
+
         public void FullCycle()
         {
 
-                if (!timersWatch.IsRunning)
-                    timersWatch.Start();
-                if (timersWatch.Elapsed.TotalMilliseconds > 16.66)
-                {
-                    DecrementeTimers();
-                    timersWatch.Reset();
-                }
-                if (!cycleWatch.IsRunning)
-                    cycleWatch.Start();
+            byte[] codedOpcode = FetchOpcode();
+            ushort decodedOpcode = DecodeOpcode(codedOpcode);
+            Opcode opcode = new Opcode(decodedOpcode);
 
-            if (cycleWatch.Elapsed.TotalMilliseconds > (1000D / CPUClockRate))
+            if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
             {
-                    byte[] codedOpcode = FetchOpcode();
-                    ushort decodedOpcode = DecodeOpcode(codedOpcode);
-                    Opcode opcode = new Opcode(decodedOpcode);
-
-                    if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
-                    {
-                        MainOpcodeMap[(opcode.FirstNibble)](opcode);
-                    }
-                    else
-                    {
-                        throw new Exception($"Uknown Opcode {opcode.FullCode}");
-                    }
-
-                    PC = (ushort)(PC + 2);
-                    cycleWatch.Reset();
+                MainOpcodeMap[(opcode.FirstNibble)](opcode);
+            }
+            else
+            {
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
             }
 
-        }   
-        private void DecrementeTimers()
+            PC = (ushort)(PC + 2);
+            cycleWatch.Reset();
+
+        }
+
+        /// <summary>
+        /// Decrementing timers should
+        /// be done every 16.666 seconds
+        /// </summary>
+        public void DecrementeTimers()
         {
             if (SoundTimer == 1)
             beep.BeginInvoke((a) => { beep.EndInvoke(a); }, null);
@@ -228,6 +227,7 @@ namespace Architecture
                 throw new Exception($"Uknown Opcode {opcode.FullCode}");
         }
 
+        //Hacky soulution for sound
         Action beep = ConsoleBeep;
         private static void ConsoleBeep()
         {

@@ -52,7 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleUI\ConsoleCommands.cs" />
+    <Compile Include="ConsoleUI\ConsoleCommandsProcessor.cs" />
+    <Compile Include="ConsoleUI\InterpreterInstance.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -65,9 +66,9 @@
       <Project>{1de51dd8-eaa4-45de-b385-0a6bdf64de41}</Project>
       <Name>Architecture</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SDLLayer\SDLLayer.csproj">
+    <ProjectReference Include="..\SDLLayer\DisplayLibrary.csproj">
       <Project>{41e8f888-b819-43d7-829b-4a03b3afa4da}</Project>
-      <Name>SDLLayer</Name>
+      <Name>DisplayLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
