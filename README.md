@@ -6,10 +6,10 @@ if file exist, so try to load only c8 programs otherwise you will crash.
 Then you can specify your Clock rate E.g SetClockRate 1000.  
 NOTE that default clock rate is 600 which is probably good for  
 80% of c8 ROMs you can find. Then you can specify your color scheme.
-Do it by DisplayMode [default|fallout|blue|red] default is standard black and white.
-BuiltInFontFile.txt file is for users who know about chip-8 font and want to modify it 
+Do it by DisplayMode [default|fallout|blue|red] default is standard black and white.  
+BuiltInFontFile.txt file is for users who know about chip-8 font and want to modify it   
 to their liking. If you mess up just delete the file and it will be generated again.  
-NOTE: if you add more font beyond 80 lines it won't matter anyway cause    
+NOTE: if you add more font beyond 80 lines it won't matter anyway cause      
 no program uses more than 16 characters and if you get past 511 lines you  
 will crash. Each 5 lines stand for 1 character.   
 
