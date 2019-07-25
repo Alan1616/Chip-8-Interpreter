@@ -7,8 +7,8 @@
     <ProjectGuid>{41E8F888-B819-43D7-829B-4A03B3AFA4DA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SDLLayer</RootNamespace>
-    <AssemblyName>SDLLayer</AssemblyName>
+    <RootNamespace>DisplayLibrary</RootNamespace>
+    <AssemblyName>DisplayLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

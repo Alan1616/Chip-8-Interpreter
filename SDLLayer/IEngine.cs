@@ -1,5 +1,5 @@
 ﻿using System;
-namespace SDLLayer
+namespace DisplayLibrary
 {
     public interface IEngine
     {

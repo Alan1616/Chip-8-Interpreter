@@ -7,7 +7,7 @@ using System.IO;
 using Architecture;
 using System.Threading;
 using SDL2;
-using SDLLayer;
+using DisplayLibrary;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using Chip_8_ConsoleDisplay.ConsoleUI;

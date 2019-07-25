@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Architecture;
-using SDLLayer;
+using DisplayLibrary;
 
 namespace Chip_8_ConsoleDisplay.ConsoleUI
 {
