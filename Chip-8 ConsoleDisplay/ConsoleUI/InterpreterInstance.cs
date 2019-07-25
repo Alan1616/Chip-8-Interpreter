@@ -19,8 +19,6 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             set { isRunning = value; }
         }
 
-        public DisplayMode DisplayScheme { get; set; } = DisplayMode.DefaultMode;
-
         public IEngine Engine;
 
         public CPU CurrentCPU;
@@ -46,7 +44,7 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             {
                 EmulationCycle();
             }
-        
+
             CleanUp();
         }
 
@@ -55,7 +53,6 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
         {
             Engine.OpenWindow();
             Engine.TriesToQuitWhileWaitingEvent += Engine_TriesToQuitWhileWaitingEvent;
-            Engine.SetColorScheme(DisplayScheme);
         }
 
         private void Engine_TriesToQuitWhileWaitingEvent(object sender, bool e)
@@ -65,9 +62,16 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
 
         private void EmulationCycle()
         {
-            CurrentCPU.FullCycle();
-            Engine.Render();
+            // Execute x opcodes where x = clock rate / frames per second
+            for (int i = 0; i < CurrentCPU.CPUClockRate / 60; i++)
+            {
+                CurrentCPU.FullCycle();
+            }
+
+            CurrentCPU.DecrementeTimers();
             Engine.HandleEvents(ref isRunning);
+            Engine.Render();
+            Thread.Sleep(TimeSpan.FromMilliseconds(16));
         }
 
         private void CleanUp()

@@ -1,42 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Architecture;
 using SDL2;
-using SDLLayer.PixleParsers;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SDLLayer
 {
     public class SDLWindowDisplay : IEngine
     {
-        private const float FRAMES_PER_SECOND = 60F;
-        private const float FRAME_TIME = 1000F / FRAMES_PER_SECOND;
 
         private IntPtr window;
         private IntPtr renderer;
         private readonly IDircectKeyboardAccess keyboardAccess;
         private readonly IDirectDisplayAccess displayAccess;
         private uint[] PixelsData = new uint[64 * 32];
-        private readonly Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
-        public event EventHandler<bool> TriesToQuitWhileWaitingEvent;
-        private Stopwatch frameTimer = new Stopwatch();
-        private IPixleParser pixleParser;
+        private Dictionary<SDL.SDL_Keycode, byte> keyboardMap;
 
-        public SDLWindowDisplay(IDircectKeyboardAccess keyboardSource,IDirectDisplayAccess displaySource, bool modeFlag)
+        public event EventHandler<bool> TriesToQuitWhileWaitingEvent;
+        public DisplayMode DisplayMode { get; set; } = DisplayMode.DefaultMode;
+
+
+        public SDLWindowDisplay(IDircectKeyboardAccess keyboardSource,IDirectDisplayAccess displaySource)
         {
     
             keyboardAccess = keyboardSource;
             displayAccess = displaySource;
-
-            keyboardAccess.WaitForKeypressEvent += keyboardAccess_WaitForKeypressEvent;
-
-            //window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-            //renderer = SDL.SDL_CreateRenderer(window, -1, 0);
-            //SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 
             keyboardMap = new Dictionary<SDL.SDL_Keycode, byte>
             {
@@ -66,6 +58,7 @@ namespace SDLLayer
                 Console.WriteLine("SDL failed to init.");
             }
             window = SDL.SDL_CreateWindow("Chip-8 Emulator", SDL.SDL_WINDOWPOS_CENTERED, SDL.SDL_WINDOWPOS_CENTERED, 800, 600, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            keyboardAccess.WaitForKeypressEvent += keyboardAccess_WaitForKeypressEvent;
             renderer = SDL.SDL_CreateRenderer(window, -1, 0);
             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         }
@@ -75,7 +68,7 @@ namespace SDLLayer
             while (keyboardAccess.AwaitsForKeypress)
             {
                 SDL.SDL_Event ev;
-                SDL.SDL_PollEvent(out ev);
+                SDL.SDL_WaitEvent(out ev);
                 if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
                 {
                     keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
@@ -112,20 +105,9 @@ namespace SDLLayer
         }
         public void Render()
         {
-            if (!frameTimer.IsRunning)
-            {
-                frameTimer.Start();
-            }
-
-            if (frameTimer.Elapsed.TotalMilliseconds >= FRAME_TIME)
-            {
-                UpdatePixelData();
-                RenderSingleFrame();
-
-                frameTimer.Reset();
-            }
-
-    }
+            UpdatePixelData();
+            RenderSingleFrame();
+        }
 
         private void RenderSingleFrame()
         {
@@ -152,7 +134,7 @@ namespace SDLLayer
             {
                 for (int j = 0; j < 64; j++)
                 {
-                    PixelsData[j + i * 64] = pixleParser.ParsePixels(displayAccess.PixelsState[j + i *64]);
+                    PixelsData[j + i * 64] = PixleParser.pixleParserMethodsMap[DisplayMode](displayAccess.PixelsState[ j + i * 64]);            
                 }
             }
         }
@@ -163,11 +145,6 @@ namespace SDLLayer
             SDL.SDL_DestroyWindow(window);
             SDL.SDL_DestroyRenderer(renderer);
             SDL.SDL_Quit();
-        }
-
-        public void SetColorScheme(DisplayMode DisplayScheme)
-        {
-            pixleParser = ParserFactory.GetPixleParser(DisplayScheme);
         }
     }
 }

@@ -127,50 +127,42 @@ namespace Architecture
             SP = 0;
             I = 0;
         }
- 
-   
+
+
 
         /// <summary>
         /// A full cycle of CPU including :
-        /// fetching, decoding and executing opcode 
-        /// and decrementing timers if necessery
+        /// fetching, decoding and executing opcode. 
         /// </summary>
+        /// 
+
         public void FullCycle()
         {
 
-                if (!timersWatch.IsRunning)
-                    timersWatch.Start();
-                if (timersWatch.Elapsed.TotalMilliseconds > 16.66)
-                {
-                    DecrementeTimers();
-                    timersWatch.Reset();
-                }
-                if (!cycleWatch.IsRunning)
-                    cycleWatch.Start();
+            byte[] codedOpcode = FetchOpcode();
+            ushort decodedOpcode = DecodeOpcode(codedOpcode);
+            Opcode opcode = new Opcode(decodedOpcode);
 
-            if (cycleWatch.Elapsed.TotalMilliseconds > (1000D / CPUClockRate))
+            if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
             {
-                    byte[] codedOpcode = FetchOpcode();
-                    ushort decodedOpcode = DecodeOpcode(codedOpcode);
-                    Opcode opcode = new Opcode(decodedOpcode);
-
-                    if (MainOpcodeMap.ContainsKey(opcode.FirstNibble))
-                    {
-                        MainOpcodeMap[(opcode.FirstNibble)](opcode);
-                    }
-                    else
-                    {
-                        throw new Exception($"Uknown Opcode {opcode.FullCode}");
-                    }
-
-                    PC = (ushort)(PC + 2);
-                    cycleWatch.Reset();
+                MainOpcodeMap[(opcode.FirstNibble)](opcode);
+            }
+            else
+            {
+                throw new Exception($"Uknown Opcode {opcode.FullCode}");
             }
 
-        }   
-        private void DecrementeTimers()
+            PC = (ushort)(PC + 2);
+            cycleWatch.Reset();
+
+        }
+
+        /// <summary>
+        /// Decrementing timers should
+        /// be done every 16.666 seconds
+        /// </summary>
+        public void DecrementeTimers()
         {
-            //TODO Real Sound Source!
             if (SoundTimer == 1)
             beep.BeginInvoke((a) => { beep.EndInvoke(a); }, null);
             if (SoundTimer > 0)
@@ -235,6 +227,7 @@ namespace Architecture
                 throw new Exception($"Uknown Opcode {opcode.FullCode}");
         }
 
+        //Hacky soulution for sound
         Action beep = ConsoleBeep;
         private static void ConsoleBeep()
         {

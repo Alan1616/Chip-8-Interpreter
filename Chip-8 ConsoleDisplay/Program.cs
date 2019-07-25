@@ -20,7 +20,7 @@ namespace Chip_8_ConsoleDisplay
         static void Main(string[] args)
         {                     
             CPU cpu = new CPU();
-            SDLWindowDisplay sdl = new SDLWindowDisplay(cpu, cpu.Display, true);
+            SDLWindowDisplay sdl = new SDLWindowDisplay(cpu, cpu.Display);
 
             InterpreterInstance interpreter = new InterpreterInstance(cpu, sdl);
 

@@ -61,7 +61,7 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
             if (ConsoleCommandsMap.ContainsKey(consoleCommand))
             {
                 ConsoleCommandsMap[consoleCommand](interpreter, value);
-                Console.WriteLine($"Display Mode : {value}");
+
             }
             else
             {
@@ -118,11 +118,12 @@ namespace Chip_8_ConsoleDisplay.ConsoleUI
 
             if (DisplayModesMap.ContainsKey(value))
             {
-                interpreter.DisplayScheme = DisplayModesMap[value];
+                interpreter.Engine.DisplayMode = DisplayModesMap[value];
+                Console.WriteLine($"Display Mode : {value}");
             }
             else
             {
-                Console.WriteLine(">Wrong value choose on or off instead");
+                Console.WriteLine(">Wrong value choose [default/fallout/red/blue]");
             }
         }
 
