@@ -37,9 +37,6 @@ namespace Architecture
         private byte DelayTimer;
         private byte SoundTimer;
 
-        private Stopwatch timersWatch = new Stopwatch();
-        private Stopwatch cycleWatch = new Stopwatch();
-
         //The program counter(PC) is 16-bit, and is used to store the currently executing address
         private ushort PC = 0x200;
 
@@ -153,7 +150,6 @@ namespace Architecture
             }
 
             PC = (ushort)(PC + 2);
-            cycleWatch.Reset();
 
         }
 

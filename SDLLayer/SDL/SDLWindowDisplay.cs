@@ -68,7 +68,7 @@ namespace DisplayLibrary
             while (keyboardAccess.AwaitsForKeypress)
             {
                 SDL.SDL_Event ev;
-                SDL.SDL_WaitEvent(out ev);
+                SDL.SDL_PollEvent(out ev);
                 if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
                 {
                     keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
