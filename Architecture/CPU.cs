@@ -17,16 +17,6 @@ namespace Architecture
         private readonly Dictionary<ushort, Action<Opcode>> MainOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> ArithmeticsOpcodeMap;
         private readonly Dictionary<ushort, Action<Opcode>> LoadsOpcodeMap;
-        // Should cpu stop exceution waiting for keypress.
-        public bool AwaitsForKeypress { get; set; } = false;
-        // Event that is invoked when chip-8 waits for keypress.
-        // Should be subscribed by your keyboard access class instance.
-        public event EventHandler<bool> WaitForKeypressEvent;
-
-        /// <summary>
-        /// Default clock rate Chip-8 runs at.
-        /// </summary>
-        public int CPUClockRate { get; set; } = 600;
 
         // General purpose 8-bit registers, referred to as Vx, where x is a hexadecimal digit (0 through F)
         private byte[] V = new byte[16];
@@ -47,6 +37,18 @@ namespace Architecture
 
         private Random random = new Random();
 
+
+        /// <summary>
+        /// Default clock rate Chip-8 runs at.
+        /// </summary>
+        public int CPUClockRate { get; set; } = 600;
+
+        // Should cpu stop exceution waiting for keypress.
+        public bool AwaitsForKeypress { get; set; } = false;
+        // Event that is invoked when chip-8 waits for keypress.
+        // Should be subscribed by your keyboard access class instance.
+        public event EventHandler<bool> WaitForKeypressEvent;
+
         public Display Display = new Display();
 
         public Memory Memory = new Memory();
@@ -54,11 +56,6 @@ namespace Architecture
 
         // The computers which originally used the Chip-8 Language had a 16-key hexadecimal keypad
         public bool[] KeyState { get; set; } = new bool[16] ;
-
-        private bool DisplayGet(int i)
-        {
-            return Display.PixelsState[i];
-        }
 
         public CPU()
         {
@@ -224,6 +221,7 @@ namespace Architecture
         }
 
         //Hacky soulution for sound
+        //TODO - move it to DisplayLibrary.
         Action beep = ConsoleBeep;
         private static void ConsoleBeep()
         {

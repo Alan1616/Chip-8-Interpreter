@@ -30,8 +30,8 @@ namespace Architecture
             }
             catch (Exception)
             {
-                //TODO log it somwhere.
-                throw;
+                //TODO log it somwhere as interpreter can work w/o fonts.
+                //throw;
             }
        
         }
@@ -69,14 +69,7 @@ namespace Architecture
             "0xF0", "0x80", "0xF0", "0xF0", "0x80", "0xF0", "0x80", "0x80"
             };
 
-            using (StreamWriter s = new StreamWriter("BuildInFontFile.txt"))
-            {
-                foreach (string singleLine in defaultFont)
-                {
-                    s.Write(singleLine.ToString() + Environment.NewLine);
-                }
-            }
-            
+            File.WriteAllLines("BuildInFontFile.txt", defaultFont);           
         }
 
         public void LoadProgram(string location)

@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using Architecture;
-using System.Threading;
-using SDL2;
 using DisplayLibrary;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 using Chip_8_ConsoleDisplay.ConsoleUI;
 
 namespace Chip_8_ConsoleDisplay

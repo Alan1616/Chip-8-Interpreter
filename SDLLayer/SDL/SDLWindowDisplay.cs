@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Architecture;
 using SDL2;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DisplayLibrary
 {
@@ -63,25 +59,6 @@ namespace DisplayLibrary
             SDL.SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         }
 
-        private void keyboardAccess_WaitForKeypressEvent(object sender, bool e)
-        {
-            while (keyboardAccess.AwaitsForKeypress)
-            {
-                SDL.SDL_Event ev;
-                SDL.SDL_PollEvent(out ev);
-                if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
-                {
-                    keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
-                    keyboardAccess.AwaitsForKeypress = false;
-                }
-                if (ev.type == SDL.SDL_EventType.SDL_QUIT)
-                {
-                    keyboardAccess.AwaitsForKeypress = false;
-                    TriesToQuitWhileWaitingEvent?.Invoke(this, keyboardAccess.AwaitsForKeypress);
-                }
-                Render();
-            }
-        }
         public  void HandleEvents(ref bool isRunning)
         {
             SDL.SDL_Event ev;
@@ -103,6 +80,16 @@ namespace DisplayLibrary
                     break;
             }
         }
+
+        public void Quit()
+        {
+            keyboardAccess.WaitForKeypressEvent -= keyboardAccess_WaitForKeypressEvent;
+            SDL.SDL_DestroyWindow(window);
+            SDL.SDL_DestroyRenderer(renderer);
+            SDL.SDL_Quit();
+        }
+
+
         public void Render()
         {
             UpdatePixelData();
@@ -134,17 +121,32 @@ namespace DisplayLibrary
             {
                 for (int j = 0; j < 64; j++)
                 {
-                    PixelsData[j + i * 64] = PixleParser.pixleParserMethodsMap[DisplayMode](displayAccess.PixelsState[ j + i * 64]);            
+                    PixelsData[j + i * 64] = PixleDataParser.pixleParserMethodsMap[DisplayMode](displayAccess.PixelsState[ j + i * 64]);            
                 }
             }
         }
 
-        public void Quit()
+
+        private void keyboardAccess_WaitForKeypressEvent(object sender, bool e)
         {
-            keyboardAccess.WaitForKeypressEvent -= keyboardAccess_WaitForKeypressEvent;
-            SDL.SDL_DestroyWindow(window);
-            SDL.SDL_DestroyRenderer(renderer);
-            SDL.SDL_Quit();
+            while (keyboardAccess.AwaitsForKeypress)
+            {
+                SDL.SDL_Event ev;
+                SDL.SDL_PollEvent(out ev);
+                if (ev.type == SDL.SDL_EventType.SDL_KEYDOWN && keyboardMap.ContainsKey(ev.key.keysym.sym))
+                {
+                    keyboardAccess.KeyState[keyboardMap[ev.key.keysym.sym]] = true;
+                    keyboardAccess.AwaitsForKeypress = false;
+                }
+                if (ev.type == SDL.SDL_EventType.SDL_QUIT)
+                {
+                    keyboardAccess.AwaitsForKeypress = false;
+                    TriesToQuitWhileWaitingEvent?.Invoke(this, keyboardAccess.AwaitsForKeypress);
+                }
+                Render();
+                SDL.SDL_Delay(1);
+            }
         }
+
     }
 }
