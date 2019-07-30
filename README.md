@@ -6,7 +6,7 @@ Commands you can use:
 Help - displays commands list.  
 LoadRom - loads rom from specified directory.  
 Run - runs previously loaded ROM.    
-SetClockRate [20-2000] - specify your clock rate.    
+SetClockRate [200-2000] - specify your clock rate.    
 DisplayMode [default|fallout|blue|red] - choose color scheme.  
 
 NOTE: default clock rate is 600 which is probably good for   
